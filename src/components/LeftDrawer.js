@@ -1,5 +1,4 @@
 import {
-    List,
     Divider,
     ListItem,
     ListItemButton,
@@ -11,12 +10,6 @@ import {
     styled,
 } from "@mui/material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import RestorePageRoundedIcon from "@mui/icons-material/RestorePageRounded";
-import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
-import ImageRoundedIcon from '@mui/icons-material/ImageRounded';
-import CropRoundedIcon from '@mui/icons-material/CropRounded';
-import Grid4x4RoundedIcon from '@mui/icons-material/Grid4x4Rounded';
-import PaletteRoundedIcon from '@mui/icons-material/PaletteRounded';
 
 // Aligns the close button and keeps the content below the app bar
 export const LeftDrawerHeader = styled("div")(({ theme }) => ({
@@ -72,7 +65,7 @@ const DesktopDrawer = styled(Drawer, { shouldForwardProp: (prop) => prop !== "op
     }),
 }));
 
-function LeftDrawer({ drawerOpen, closeDrawer }) {
+function LeftDrawer({ children, drawerOpen, closeDrawer }) {
     const theme = useTheme();
 
     const drawerContent = (
@@ -83,17 +76,7 @@ function LeftDrawer({ drawerOpen, closeDrawer }) {
                 </IconButton>
             </LeftDrawerHeader>
             <Divider />
-            <List>
-                <LeftDrawerItem text="Load project" icon={<RestorePageRoundedIcon />}/>
-                <LeftDrawerItem text="Save project" icon={<SaveRoundedIcon />} />
-            </List>
-            <Divider />
-            <List>
-                <LeftDrawerItem text="Image" icon={<ImageRoundedIcon />}/>
-                <LeftDrawerItem text="Resize" icon={<CropRoundedIcon />}/>
-                <LeftDrawerItem text="Grid" icon={<Grid4x4RoundedIcon />}/>
-                <LeftDrawerItem text="Colors" icon={<PaletteRoundedIcon />}/>
-            </List>
+            {children}
         </div>
     );
 
