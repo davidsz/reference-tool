@@ -23,7 +23,7 @@ export const LeftDrawerHeader = styled("div")(({ theme }) => ({
 export function LeftDrawerItem(props) {
     return (
         <ListItem key={props.text} disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={props.onClick}>
                 <ListItemIcon>
                     {props.icon}
                 </ListItemIcon>
