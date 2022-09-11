@@ -17,8 +17,8 @@ function RightSideWidget({ name, description, children, action }) {
                 {children}
             </CardContent>
             {action && (
-                <CardActions>
-                    <Button size="small" onClick={action?.callback}>
+                <CardActions sx={{ justifyContent: "right" }}>
+                    <Button size="small" variant="contained" onClick={action?.callback}>
                         {action?.name}
                     </Button>
                 </CardActions>

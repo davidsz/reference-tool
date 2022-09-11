@@ -71,7 +71,7 @@ function LeftDrawer({ children, drawerOpen, closeDrawer }) {
     const drawerContent = (
         <div>
             <LeftDrawerHeader>
-                <IconButton onClick={closeDrawer}>
+                <IconButton color="inherit" onClick={closeDrawer}>
                     <ChevronLeftIcon />
                 </IconButton>
             </LeftDrawerHeader>

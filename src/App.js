@@ -1,6 +1,20 @@
 import "./App.css";
 import { useState } from "react";
-import { Box, CssBaseline, Typography, Paper, Grid, IconButton, List, Divider, Stack, Slider } from "@mui/material";
+import {
+    Box,
+    CssBaseline,
+    Typography,
+    Paper,
+    Grid,
+    IconButton,
+    List,
+    Divider,
+    Stack,
+    Slider,
+    TextField,
+    Switch,
+    FormControlLabel,
+} from "@mui/material";
 import TopBar from "./components/TopBar";
 import LeftDrawer from "./components/LeftDrawer";
 import { LeftDrawerHeader, LeftDrawerItem } from "./components/LeftDrawer";
@@ -15,6 +29,9 @@ import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
 import RightSideWidget from "./components/RightSideWidget";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import CloseIcon from "@mui/icons-material/Close";
+import PublicIcon from "@mui/icons-material/Public";
+import ContrastIcon from "@mui/icons-material/Contrast";
 
 const app_mode = {
     LOAD_SESSION: {
@@ -41,28 +58,43 @@ const app_mode = {
     },
     IMAGE: {
         widgets: (
-            <RightSideWidget
-                name="Select image"
-                description="Provide an image to work with."
-                action={{ name: "Use", callback: () => {} }}
-            >
-                Here goes the file input.
-            </RightSideWidget>
+            <>
+                <RightSideWidget
+                    name="Using local image"
+                    description="Select image file from your device."
+                    action={{ name: "Load", callback: () => {} }}
+                >
+                    Here goes the file input.
+                </RightSideWidget>
+                <RightSideWidget
+                    name="Image from URL"
+                    description="Load image from network using a HTTP/HTTPS address."
+                    action={{ name: "Load", callback: () => {} }}
+                >
+                    <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
+                        <PublicIcon />
+                        <TextField label="URL" variant="outlined" sx={{ flexGrow: 1 }} />
+                    </Stack>
+                </RightSideWidget>
+            </>
         ),
     },
     RESIZE: {
         widgets: (
             <>
                 <RightSideWidget
-                    name="Selection size"
-                    description="Provide an image to work with."
+                    name="Resize image"
+                    description="You can specify the desired aspect ratio."
                     action={{ name: "Resize", callback: () => {} }}
                 >
-                    Here goes the number input.
+                    <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
+                        <TextField label="Width" variant="outlined" />
+                        <CloseIcon />
+                        <TextField label="Height" variant="outlined" />
+                    </Stack>
                 </RightSideWidget>
                 <RightSideWidget
-                    name=""
-                    description="Restore image to its original size."
+                    description="Size corrections are not permanent. Here you can restore the image to its original size."
                     action={{ name: "Restore", callback: () => {} }}
                 ></RightSideWidget>
             </>
@@ -73,19 +105,31 @@ const app_mode = {
             <>
                 <RightSideWidget
                     name="Automatic grid creation"
-                    description="Generate a simple grid with uniform cell sizes."
+                    description="Generate a simple grid with uniform cell sizes by specifying the amount of cells in both directions."
                     action={{ name: "Create", callback: () => {} }}
                 >
-                    Here goes the number input.
+                    <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
+                        <TextField label="Horizontal" variant="outlined" />
+                        <CloseIcon />
+                        <TextField label="Vertical" variant="outlined" />
+                    </Stack>
                 </RightSideWidget>
                 <RightSideWidget
                     name="Virtual size"
                     description="You can provide an image size without specifying the unit. These numbers will be used to calculate distances between grid points."
+                    action={{ name: "Refresh", callback: () => {} }}
                 >
-                    Here goes the range input.
+                    <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
+                        <TextField label="Width" variant="outlined" />
+                        <CloseIcon />
+                        <TextField label="Height" variant="outlined" />
+                    </Stack>
                 </RightSideWidget>
                 <RightSideWidget name="Line color" description="">
-                    Here goes the range input.
+                    <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
+                        <ContrastIcon />
+                        <Slider defaultValue={50} />
+                    </Stack>
                 </RightSideWidget>
             </>
         ),
@@ -96,7 +140,9 @@ const app_mode = {
                 name="Color filters"
                 description="A collection of quick filters to help with color validation."
             >
-                Here go a couple of checkbox input.
+                <Stack spacing={2} direction="column" sx={{ mt: 3 }} alignItems="left">
+                    <FormControlLabel control={<Switch onChange={() => {}} />} label="Black and white" />
+                </Stack>
             </RightSideWidget>
         ),
     },
@@ -110,6 +156,7 @@ export default function App() {
     return (
         <Box sx={{ display: "flex" }}>
             <CssBaseline />
+
             <TopBar drawerOpen={drawerOpen} openDrawer={() => setDrawerOpen(true)}>
                 <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
                     Ferenc - Reference tool
