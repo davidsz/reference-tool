@@ -8,7 +8,7 @@ function RightSideWidget({ name, description, children, action }) {
     return (
         <Card sx={{ mb: 3 }}>
             <CardContent>
-                <Typography gutterBottom variant="h5" component="div">
+                <Typography gutterBottom variant="h6" component="div">
                     {name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">

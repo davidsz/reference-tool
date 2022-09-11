@@ -32,6 +32,7 @@ import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import CloseIcon from "@mui/icons-material/Close";
 import PublicIcon from "@mui/icons-material/Public";
 import ContrastIcon from "@mui/icons-material/Contrast";
+import FileInput from "./components/FileInput";
 
 const app_mode = {
     LOAD_SESSION: {
@@ -41,7 +42,7 @@ const app_mode = {
                 description="Restore your previous session from a .json file."
                 action={{ name: "Restore", callback: () => {} }}
             >
-                Here goes the file input.
+                <FileInput />
             </RightSideWidget>
         ),
     },
@@ -52,7 +53,7 @@ const app_mode = {
                 description="Save your current session to a .json file."
                 action={{ name: "Save", callback: () => {} }}
             >
-                Here goes the file input.
+                <FileInput />
             </RightSideWidget>
         ),
     },
@@ -64,7 +65,7 @@ const app_mode = {
                     description="Select image file from your device."
                     action={{ name: "Load", callback: () => {} }}
                 >
-                    Here goes the file input.
+                    <FileInput />
                 </RightSideWidget>
                 <RightSideWidget
                     name="Image from URL"
@@ -158,7 +159,7 @@ export default function App() {
             <CssBaseline />
 
             <TopBar drawerOpen={drawerOpen} openDrawer={() => setDrawerOpen(true)}>
-                <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+                <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1 }}>
                     Ferenc - Reference tool
                 </Typography>
                 <Stack spacing={2} direction="row" sx={{ minWidth: 650, mr: 5 }} alignItems="center">
