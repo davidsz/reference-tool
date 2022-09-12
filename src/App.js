@@ -4,7 +4,6 @@ import {
     Box,
     CssBaseline,
     Typography,
-    Paper,
     Grid,
     IconButton,
     List,
@@ -33,6 +32,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import PublicIcon from "@mui/icons-material/Public";
 import ContrastIcon from "@mui/icons-material/Contrast";
 import FileInput from "./components/FileInput";
+import Workspace from "./components/Workspace";
 
 const app_mode = {
     LOAD_SESSION: {
@@ -153,6 +153,7 @@ export default function App() {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [zoomValue, setZoomValue] = useState(0);
     const [appMode, setAppMode] = useState(app_mode.LOAD_SESSION);
+    const [fullscreenMode, setFullscreenMode] = useState(false);
 
     return (
         <Box sx={{ display: "flex" }}>
@@ -167,7 +168,12 @@ export default function App() {
                     <Slider value={zoomValue} min={0} max={100} onChange={(e, newValue) => setZoomValue(newValue)} />
                     <ZoomInIcon />
                 </Stack>
-                <IconButton color="inherit">
+                <IconButton
+                    color="inherit"
+                    onClick={() => {
+                        setFullscreenMode(!fullscreenMode);
+                    }}
+                >
                     <FullscreenIcon />
                 </IconButton>
             </TopBar>
@@ -214,13 +220,11 @@ export default function App() {
                 </List>
             </LeftDrawer>
 
-            <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <Box component="main" sx={{ display: "flex", flexDirection: "column", flexGrow: 1, p: 2, height: "100vh" }}>
                 <LeftDrawerHeader />
-                <Grid container spacing={2}>
+                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                     <Grid item xs={9}>
-                        <Paper elevation={2}>
-                            <canvas id="workspace-canvas" width="500" height="500"></canvas>
-                        </Paper>
+                        <Workspace />
                     </Grid>
                     <Grid item xs={3}>
                         {appMode.widgets}
