@@ -111,7 +111,7 @@ class WorkspaceEngine {
 
     set gridColor(val) {
         this.grid_color_ = val;
-        [...this.grid_points, ...this.resize_points].forEach(function (point) {
+        [...this.grid_points, ...this.resize_points].forEach((point) => {
             point.style.backgroundColor = val;
         });
         this.redraw();
@@ -177,9 +177,7 @@ class WorkspaceEngine {
         this.canvas = canvas_element;
         this.handles_container = handles_container_element;
 
-        canvas_element.oncontextmenu = function (e) {
-            e.preventDefault();
-        }
+        canvas_element.oncontextmenu = (e) => e.preventDefault();
 
         if ('wakeLock' in navigator) {
             this.wakeLockSentinel = navigator.wakeLock.request('screen');
@@ -338,7 +336,7 @@ class WorkspaceEngine {
         point.vertical = true;
 
         // Update and redraw the corresponding point when moving the handle
-        makeElementDraggable(point, function (global_x, global_y) {
+        makeElementDraggable(point, (global_x, global_y) => {
             point.x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5);
             point.y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
             this.updateDistanceLabels();
@@ -346,7 +344,7 @@ class WorkspaceEngine {
         });
 
         // Change horizontal and vertical lines on right click
-        attachRightClickHandler(point, function () {
+        attachRightClickHandler(point, () => {
             if (point.horizontal && point.vertical) {
                 point.vertical = false;
             } else if (point.horizontal && !point.vertical) {
@@ -361,7 +359,7 @@ class WorkspaceEngine {
         });
 
         // Remove point by holding right mouse button
-        attachLongRightClickHandler(point, 750, function () {
+        attachLongRightClickHandler(point, 750, () => {
             for (let i = 0; i < this.grid_points.length; i++) {
                 if (this.grid_points[i] === point) {
                     this.grid_points.splice(i, 1);
@@ -411,7 +409,7 @@ class WorkspaceEngine {
     }
 
     updateHandles() {
-        [...this.grid_points, ...this.resize_points].forEach(function (point) {
+        [...this.grid_points, ...this.resize_points].forEach((point) => {
             let local_x = this.image_width * (point.x / 100) + this.image_x;
             let local_y = this.image_height * (point.y / 100) + this.image_y;
             point.style.top = (local_y - HANDLE_CENTER) + "px";
@@ -456,14 +454,14 @@ class WorkspaceEngine {
                 }
 
                 // Resize selection rectangle when moving the handle
-                makeElementDraggable(point, function (global_x, global_y) {
+                makeElementDraggable(point, (global_x, global_y) => {
                     point.x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5);
                     point.y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
                     this.redraw();
                 });
 
                 // Move selection rectangle on right click dragging
-                makeElementDraggable(point, function (global_x, global_y) {
+                makeElementDraggable(point, (global_x, global_y) => {
                     let other_point = this.resize_points[i === 0 ? 1 : 0];
                     let prev_x = point.x,
                         prev_y = point.y;
@@ -556,8 +554,8 @@ class WorkspaceEngine {
         }
 
         let fileReader = new FileReader();
-        fileReader.onload = function () {
-            this.image.onload = function () {
+        fileReader.onload = () => {
+            this.image.onload = () => {
                 this.clearGridPoints();
                 this.resetResizeHandles();
                 this.source_width = this.image.width;
@@ -571,7 +569,7 @@ class WorkspaceEngine {
     }
 
     loadImageURL(url) {
-        this.image.onload = function () {
+        this.image.onload = () => {
             this.clearGridPoints();
             this.resetResizeHandles();
             this.source_width = this.image.width;
