@@ -1,3 +1,7 @@
+import { toFixedNumber } from "./math"
+import { grayscaleEffect } from "./color_filters"
+import { makeElementDraggable, attachRightClickHandler, attachLongRightClickHandler } from "./dom"
+
 let instance;
 
 export const workspace_mode = {
@@ -209,7 +213,7 @@ class WorkspaceEngine {
         if (this.grayscale_)
             grayscaleEffect(this.canvas, context);
 
-        if (this.mode == workspace_mode.RESIZE) {
+        if (this.mode === workspace_mode.RESIZE) {
             // Rectangle for resize dimensions
             let p1 = this.resize_points[0],
                 p2 = this.resize_points[1],
@@ -222,7 +226,7 @@ class WorkspaceEngine {
             context.rect(p1_x, p1_y, p2_x - p1_x, p2_y - p1_y);
             context.stroke();
             return;
-        } else if (this.mode == workspace_mode.IMAGE)
+        } else if (this.mode === workspace_mode.IMAGE)
             return;
 
         // Lines on the top of the image
@@ -299,7 +303,7 @@ class WorkspaceEngine {
 
     addGridPoint(local_x, local_y) {
         // Do not add new points in other modes
-        if (this.mode != workspace_mode.GRID)
+        if (this.mode !== workspace_mode.GRID)
             return;
 
         // Interactive handle for the point
@@ -359,7 +363,7 @@ class WorkspaceEngine {
         // Remove point by holding right mouse button
         attachLongRightClickHandler(point, 750, function () {
             for (let i = 0; i < this.grid_points.length; i++) {
-                if (this.grid_points[i] == point) {
+                if (this.grid_points[i] === point) {
                     this.grid_points.splice(i, 1);
                     point.remove();
                     this.updateDistanceLabels();
@@ -435,7 +439,7 @@ class WorkspaceEngine {
                 // Visual position of the interactive handle
                 let local_x = this.image_x,
                     local_y = this.image_y;
-                if (i == 1) {
+                if (i === 1) {
                     local_x += this.image_width;
                     local_y += this.image_height;
                 }
@@ -443,10 +447,13 @@ class WorkspaceEngine {
                 point.style.left = (local_x - HANDLE_CENTER) + "px";
 
                 // Position in percentage, relative to the image on canvas
-                if (i == 0)
-                    point.x = 0, point.y = 0;
-                else
-                    point.x = 100, point.y = 100;
+                if (i === 0) {
+                    point.x = 0;
+                    point.y = 0;
+                } else {
+                    point.x = 100;
+                    point.y = 100;
+                }
 
                 // Resize selection rectangle when moving the handle
                 makeElementDraggable(point, function (global_x, global_y) {
@@ -457,7 +464,7 @@ class WorkspaceEngine {
 
                 // Move selection rectangle on right click dragging
                 makeElementDraggable(point, function (global_x, global_y) {
-                    let other_point = this.resize_points[i == 0 ? 1 : 0];
+                    let other_point = this.resize_points[i === 0 ? 1 : 0];
                     let prev_x = point.x,
                         prev_y = point.y;
                     point.x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5);
@@ -488,8 +495,10 @@ class WorkspaceEngine {
 
         let point_a = this.resize_points[0],
             point_b = this.resize_points[1];
-        point_a.x = 0, point_a.y = 0;
-        point_b.x = 100, point_b.y = 100;
+        point_a.x = 0;
+        point_a.y = 0;
+        point_b.x = 100;
+        point_b.y = 100;
     }
 
     cropImage() {
@@ -501,7 +510,7 @@ class WorkspaceEngine {
         else if (point_a.x > point_b.x) top_left_index = 1;
         else return;
         point_a = this.resize_points[top_left_index];
-        point_b = this.resize_points[top_left_index == 0 ? 1 : 0];
+        point_b = this.resize_points[top_left_index === 0 ? 1 : 0];
 
         // Store crop coordinates and keep the image object untouched
         this.source_x = this.source_width * (point_a.x / 100) + this.source_x;
@@ -532,7 +541,7 @@ class WorkspaceEngine {
             point_b = this.resize_points[1],
             top_left_index = point_a.x <= point_b.x ? 0 : 1;
         point_a = this.resize_points[top_left_index];
-        point_b = this.resize_points[top_left_index == 0 ? 1 : 0];
+        point_b = this.resize_points[top_left_index === 0 ? 1 : 0];
 
         point_b.x = point_a.x + virtual_width;
         point_b.y = point_a.y + virtual_height;
@@ -574,5 +583,5 @@ class WorkspaceEngine {
     }
 }
 
-const singletonWorkspaceEngine = Object.freeze(new WorkspaceEngine());
+const singletonWorkspaceEngine = new WorkspaceEngine();
 export default singletonWorkspaceEngine;

@@ -1,5 +1,5 @@
-import "./App.css";
-import { useState } from "react";
+import { WorkspaceContext } from ".";
+import { useContext, useState } from "react";
 import {
     Box,
     CssBaseline,
@@ -40,7 +40,7 @@ const app_mode = {
             <RightSideWidget
                 name="Load session"
                 description="Restore your previous session from a .json file."
-                action={{ name: "Restore", callback: () => {} }}
+                action={{ name: "Restore", callback: () => { } }}
             >
                 <FileInput />
             </RightSideWidget>
@@ -51,7 +51,7 @@ const app_mode = {
             <RightSideWidget
                 name="Save session"
                 description="Save your current session to a .json file."
-                action={{ name: "Save", callback: () => {} }}
+                action={{ name: "Save", callback: () => { } }}
             >
                 <FileInput />
             </RightSideWidget>
@@ -63,14 +63,14 @@ const app_mode = {
                 <RightSideWidget
                     name="Using local image"
                     description="Select image file from your device."
-                    action={{ name: "Load", callback: () => {} }}
+                    action={{ name: "Load", callback: () => { } }}
                 >
                     <FileInput />
                 </RightSideWidget>
                 <RightSideWidget
                     name="Image from URL"
                     description="Load image from network using a HTTP/HTTPS address."
-                    action={{ name: "Load", callback: () => {} }}
+                    action={{ name: "Load", callback: () => { } }}
                 >
                     <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
                         <PublicIcon />
@@ -86,7 +86,7 @@ const app_mode = {
                 <RightSideWidget
                     name="Resize image"
                     description="You can specify the desired aspect ratio."
-                    action={{ name: "Resize", callback: () => {} }}
+                    action={{ name: "Resize", callback: () => { } }}
                 >
                     <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
                         <TextField label="Width" variant="outlined" />
@@ -96,7 +96,7 @@ const app_mode = {
                 </RightSideWidget>
                 <RightSideWidget
                     description="Size corrections are not permanent. Here you can restore the image to its original size."
-                    action={{ name: "Restore", callback: () => {} }}
+                    action={{ name: "Restore", callback: () => { } }}
                 ></RightSideWidget>
             </>
         ),
@@ -107,7 +107,7 @@ const app_mode = {
                 <RightSideWidget
                     name="Automatic grid creation"
                     description="Generate a simple grid with uniform cell sizes by specifying the amount of cells in both directions."
-                    action={{ name: "Create", callback: () => {} }}
+                    action={{ name: "Create", callback: () => { } }}
                 >
                     <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
                         <TextField label="Horizontal" variant="outlined" />
@@ -118,7 +118,7 @@ const app_mode = {
                 <RightSideWidget
                     name="Virtual size"
                     description="You can provide an image size without specifying the unit. These numbers will be used to calculate distances between grid points."
-                    action={{ name: "Refresh", callback: () => {} }}
+                    action={{ name: "Refresh", callback: () => { } }}
                 >
                     <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
                         <TextField label="Width" variant="outlined" />
@@ -142,7 +142,7 @@ const app_mode = {
                 description="A collection of quick filters to help with color validation."
             >
                 <Stack spacing={2} direction="column" sx={{ mt: 3 }} alignItems="left">
-                    <FormControlLabel control={<Switch onChange={() => {}} />} label="Black and white" />
+                    <FormControlLabel control={<Switch onChange={() => { }} />} label="Black and white" />
                 </Stack>
             </RightSideWidget>
         ),
@@ -154,6 +154,8 @@ export default function App() {
     const [zoomValue, setZoomValue] = useState(0);
     const [appMode, setAppMode] = useState(app_mode.LOAD_SESSION);
     const [fullscreenMode, setFullscreenMode] = useState(false);
+
+    const workspaceEngine = useContext(WorkspaceContext);
 
     return (
         <Box sx={{ display: "flex" }}>

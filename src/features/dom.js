@@ -2,14 +2,14 @@ export function makeElementDraggable(element, positionUpdatedCallback, button_id
     // The element assumed to have "position: absolute;"
     let posX = 0, posY = 0, prevPosX = 0, prevPosY = 0;
     element.addEventListener("mousedown", dragMouseDown);
-    if (button_id == 2) {
+    if (button_id === 2) {
         element.oncontextmenu = function (e) {
             e.preventDefault();
         };
     }
 
     function dragMouseDown(e) {
-        if (e.button != button_id)
+        if (e.button !== button_id)
             return;
         e = e || window.event;
         e.preventDefault();
@@ -46,7 +46,7 @@ export function attachRightClickHandler(element, callback) {
         e.preventDefault();
     };
     element.addEventListener("mouseup", function (e) {
-        if (e.button == 2) {
+        if (e.button === 2) {
             e.preventDefault();
             callback();
         }
@@ -58,10 +58,10 @@ export function attachLongRightClickHandler(element, delay, callback) {
         e.preventDefault();
     };
     element.addEventListener("mousedown", longRightClickMouseDown);
-    this.last_rightclick_timeout = 0;
+    let last_rightclick_timeout = 0;
 
     function longRightClickMouseDown(e) {
-        if (e.button != 2)
+        if (e.button !== 2)
             return;
         element.addEventListener("mouseup", longRightClickMouseUp);
         last_rightclick_timeout = window.setTimeout(function () {
