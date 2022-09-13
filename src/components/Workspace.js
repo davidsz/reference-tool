@@ -14,13 +14,16 @@ function Workspace(props) {
     const workspaceEngine = useContext(WorkspaceContext);
 
     useEffect(() => {
-        workspaceEngine.init(document.getElementById("workspace-canvas"), document.getElementById("grid-handles-container"));
+        workspaceEngine.init(
+            document.getElementById("workspace-canvas"),
+            document.getElementById("grid-handles-container")
+        );
         workspaceEngine.resize(document.getElementById("workspace-outer"));
         workspaceEngine.loadImageURL("image/splash.png");
     }, []);
 
     return (
-        <Paper elevation={2} id="workspace-outer" sx={{ height: "100%" }}>
+        <Paper elevation={2} id="workspace-outer" sx={{ height: "calc(100% - 7px)" }}>
             <GridHandlesContainer id="grid-handles-container">
                 <canvas id="workspace-canvas" width="500" height="500"></canvas>
             </GridHandlesContainer>

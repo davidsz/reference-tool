@@ -251,7 +251,7 @@ class WorkspaceEngine {
         // Distance labels
         // INVESTIGATE: Can the above lines logic merged into this more effectively?
         context.fillStyle = "rgba(0, 0, 0, 0.3)";
-        context.fillRect(0, 0, canvas_width - LABEL_BAR_WIDTH, LABEL_BAR_WIDTH);
+        context.fillRect(0, 0, canvas_width, LABEL_BAR_WIDTH);
         context.fillRect(canvas_width - LABEL_BAR_WIDTH, LABEL_BAR_WIDTH, canvas_width, canvas_height);
 
         context.fillRect(this.image_x, 0, this.image_width, LABEL_BAR_WIDTH);
