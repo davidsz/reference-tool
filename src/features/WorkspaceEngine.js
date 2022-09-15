@@ -207,7 +207,6 @@ class WorkspaceEngine {
             this.image_x, this.image_y,
             this.image_width, this.image_height);
 
-        // TODO: Untested
         if (this.grayscale_)
             grayscaleEffect(this.canvas, context);
 

@@ -119,7 +119,7 @@ export const app_mode = {
                 description="A collection of quick filters to help with color validation."
             >
                 <Stack spacing={2} direction="column" sx={{ mt: 3 }} alignItems="left">
-                    <FormControlLabel control={<Switch onChange={() => { }} />} label="Black and white" />
+                    <FormControlLabel control={<Switch onChange={() => { workspaceEngine.grayscale = !workspaceEngine.grayscale }} />} label="Black and white" />
                 </Stack>
             </RightSideWidget>
         ),
