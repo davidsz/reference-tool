@@ -188,9 +188,9 @@ class WorkspaceEngine {
         }
     }
 
-    resize(container_element) {
-        this.canvas.width = container_element.offsetWidth;
-        this.canvas.height = container_element.offsetHeight;
+    resize(width, height) {
+        this.canvas.width = width;
+        this.canvas.height = height;
         this.updateImageDimensions();
         this.updateHandles();
     }

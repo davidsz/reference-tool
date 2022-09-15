@@ -1,6 +1,7 @@
 import { WorkspaceContext } from "..";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { styled, Paper } from "@mui/material";
+import useResizeObserver from "@react-hook/resize-observer";
 
 // Aligns the close button and keeps the content below the app bar
 const GridHandlesContainer = styled("div")(({ theme }) => ({
@@ -13,22 +14,29 @@ const GridHandlesContainer = styled("div")(({ theme }) => ({
 function Workspace({ onScroll }) {
     const workspaceEngine = useContext(WorkspaceContext);
 
+    const workspaceOuterRef = useRef(null);
+    useResizeObserver(workspaceOuterRef, (entry) => {
+        workspaceEngine.resize(parseInt(entry.contentRect.width), parseInt(entry.contentRect.height));
+        workspaceEngine.redraw();
+    });
+
     useEffect(() => {
         workspaceEngine.init(
             document.getElementById("workspace-canvas"),
             document.getElementById("grid-handles-container")
         );
-        workspaceEngine.resize(document.getElementById("workspace-outer"));
+        let container = document.getElementById("workspace-outer");
+        workspaceEngine.resize(container.offsetWidth, container.offsetHeight);
         workspaceEngine.loadImageURL("image/splash.png");
 
-        document.getElementById("workspace-outer").addEventListener("wheel", (e) => {
+        container.addEventListener("wheel", (e) => {
             e.preventDefault();
             onScroll(parseInt(e.deltaY * -0.15));
         });
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
-        <Paper elevation={2} id="workspace-outer" sx={{ height: "calc(100% - 7px)" }}>
+        <Paper elevation={2} id="workspace-outer" ref={workspaceOuterRef} sx={{ height: "calc(100% - 7px)" }}>
             <GridHandlesContainer id="grid-handles-container">
                 <canvas id="workspace-canvas" width="500" height="500"></canvas>
             </GridHandlesContainer>
