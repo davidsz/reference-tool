@@ -10,7 +10,7 @@ const GridHandlesContainer = styled("div")(({ theme }) => ({
     overflow: "hidden",
 }));
 
-function Workspace(props) {
+function Workspace({ onScroll }) {
     const workspaceEngine = useContext(WorkspaceContext);
 
     useEffect(() => {
@@ -20,7 +20,12 @@ function Workspace(props) {
         );
         workspaceEngine.resize(document.getElementById("workspace-outer"));
         workspaceEngine.loadImageURL("image/splash.png");
-    }, []);
+
+        document.getElementById("workspace-outer").addEventListener("wheel", (e) => {
+            e.preventDefault();
+            onScroll(parseInt(e.deltaY * -0.15));
+        });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <Paper elevation={2} id="workspace-outer" sx={{ height: "calc(100% - 7px)" }}>

@@ -151,11 +151,21 @@ const app_mode = {
 
 export default function App() {
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [zoomValue, setZoomValue] = useState(0);
     const [appMode, setAppMode] = useState(app_mode.LOAD_SESSION);
+    const [zoomValue, setZoomValue] = useState(100);
     const [fullscreenMode, setFullscreenMode] = useState(false);
 
     const workspaceEngine = useContext(WorkspaceContext);
+
+    const handleWorkspaceScroll = (inc) => {
+        setZoomValue((prev) => {
+            let value = prev + inc;
+            if (value < 50 || value > 250)
+                return prev;
+            workspaceEngine.scale = value / 100;
+            return value;
+        });
+    }
 
     return (
         <Box sx={{ display: "flex" }}>
@@ -167,7 +177,10 @@ export default function App() {
                 </Typography>
                 <Stack spacing={2} direction="row" sx={{ minWidth: 650, mr: 5 }} alignItems="center">
                     <ZoomOutIcon />
-                    <Slider value={zoomValue} min={0} max={100} onChange={(e, newValue) => setZoomValue(newValue)} />
+                    <Slider value={zoomValue} min={50} max={250} onChange={(e, value) => {
+                        workspaceEngine.scale = value / 100;
+                        setZoomValue(value);
+                    }} />
                     <ZoomInIcon />
                 </Stack>
                 <IconButton
@@ -226,7 +239,7 @@ export default function App() {
                 <LeftDrawerHeader />
                 <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                     <Grid item xs={9}>
-                        <Workspace />
+                        <Workspace onScroll={handleWorkspaceScroll} />
                     </Grid>
                     <Grid item xs={3}>
                         {appMode.widgets}
