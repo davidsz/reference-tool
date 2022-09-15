@@ -1,3 +1,4 @@
+import { workspace_mode } from "./features/WorkspaceEngine";
 import RightSideWidget from "./components/RightSideWidget";
 import FileInput from "./components/FileInput";
 import CloseIcon from "@mui/icons-material/Close";
@@ -8,6 +9,7 @@ import { TextField, Stack, Switch, Slider, FormControlLabel } from "@mui/materia
 
 export const app_mode = {
     LOAD_SESSION: {
+        workspaceMode: workspace_mode.CONST,
         widgetsFor: (workspaceEngine) => (
             <RightSideWidget
                 name="Load session"
@@ -19,6 +21,7 @@ export const app_mode = {
         ),
     },
     SAVE_SESSION: {
+        workspace_mode: workspace_mode.CONST,
         widgetsFor: (workspaceEngine) => (
             <RightSideWidget
                 name="Save session"
@@ -30,6 +33,7 @@ export const app_mode = {
         ),
     },
     IMAGE: {
+        workspaceMode: workspace_mode.IMAGE,
         widgetsFor: (workspaceEngine) => {
             let file_;
             let url_ = "";
@@ -58,6 +62,7 @@ export const app_mode = {
         },
     },
     RESIZE: {
+        workspaceMode: workspace_mode.RESIZE,
         widgetsFor: (workspaceEngine) => (
             <>
                 <RightSideWidget
@@ -79,6 +84,7 @@ export const app_mode = {
         ),
     },
     GRID: {
+        workspaceMode: workspace_mode.GRID,
         widgetsFor: (workspaceEngine) => (
             <>
                 <RightSideWidget
@@ -113,6 +119,7 @@ export const app_mode = {
         ),
     },
     COLORS: {
+        workspaceMode: workspace_mode.IMAGE,
         widgetsFor: (workspaceEngine) => (
             <RightSideWidget
                 name="Color filters"

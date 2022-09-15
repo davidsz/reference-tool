@@ -36,6 +36,13 @@ export default function App() {
 
     const workspaceEngine = useContext(WorkspaceContext);
 
+    const changeAppMode = (mode) => {
+        setAppMode(() => {
+            workspaceEngine.setMode(mode.workspaceMode);
+            return mode;
+        });
+    };
+
     const handleWorkspaceScroll = (inc) => {
         setZoomValue((prev) => {
             let value = prev + inc;
@@ -77,12 +84,12 @@ export default function App() {
                     <LeftDrawerItem
                         text="Load session"
                         icon={<RestorePageRoundedIcon />}
-                        onClick={() => setAppMode(app_mode.LOAD_SESSION)}
+                        onClick={() => changeAppMode(app_mode.LOAD_SESSION)}
                     />
                     <LeftDrawerItem
                         text="Save session"
                         icon={<SaveRoundedIcon />}
-                        onClick={() => setAppMode(app_mode.SAVE_SESSION)}
+                        onClick={() => changeAppMode(app_mode.SAVE_SESSION)}
                     />
                 </List>
                 <Divider />
@@ -90,22 +97,22 @@ export default function App() {
                     <LeftDrawerItem
                         text="Image"
                         icon={<ImageRoundedIcon />}
-                        onClick={() => setAppMode(app_mode.IMAGE)}
+                        onClick={() => changeAppMode(app_mode.IMAGE)}
                     />
                     <LeftDrawerItem
                         text="Resize"
                         icon={<CropRoundedIcon />}
-                        onClick={() => setAppMode(app_mode.RESIZE)}
+                        onClick={() => changeAppMode(app_mode.RESIZE)}
                     />
                     <LeftDrawerItem
                         text="Grid"
                         icon={<Grid4x4RoundedIcon />}
-                        onClick={() => setAppMode(app_mode.GRID)}
+                        onClick={() => changeAppMode(app_mode.GRID)}
                     />
                     <LeftDrawerItem
                         text="Colors"
                         icon={<PaletteRoundedIcon />}
-                        onClick={() => setAppMode(app_mode.COLORS)}
+                        onClick={() => changeAppMode(app_mode.COLORS)}
                     />
                 </List>
                 <Divider />

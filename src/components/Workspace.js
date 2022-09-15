@@ -1,3 +1,4 @@
+import "./Workspace.css";
 import { WorkspaceContext } from "..";
 import { useContext, useEffect, useRef } from "react";
 import { styled, Paper } from "@mui/material";
@@ -20,6 +21,13 @@ function Workspace({ onScroll }) {
         workspaceEngine.redraw();
     });
 
+    const addGridPoint = (e) => {
+        let x = Math.round(e.pageX - e.target.getBoundingClientRect().left);
+        let y = Math.round(e.pageY - e.target.getBoundingClientRect().top);
+        console.log(x, y);
+        workspaceEngine.addGridPoint(x, y);
+    };
+
     useEffect(() => {
         workspaceEngine.init(
             document.getElementById("workspace-canvas"),
@@ -38,7 +46,7 @@ function Workspace({ onScroll }) {
     return (
         <Paper elevation={2} id="workspace-outer" ref={workspaceOuterRef} sx={{ height: "calc(100% - 7px)" }}>
             <GridHandlesContainer id="grid-handles-container">
-                <canvas id="workspace-canvas" width="500" height="500"></canvas>
+                <canvas id="workspace-canvas" width="500" height="500" onClick={addGridPoint}></canvas>
             </GridHandlesContainer>
         </Paper>
     );

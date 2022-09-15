@@ -1,0 +1,8 @@
+.grid-handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: gray;
+    border-radius: 10px;
+    cursor: pointer;
+}
