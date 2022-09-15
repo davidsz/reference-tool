@@ -121,7 +121,7 @@ export default function App() {
                         <Workspace onScroll={handleWorkspaceScroll} />
                     </Grid>
                     <Grid item xs={3}>
-                        {appMode.widgets}
+                        {appMode.widgetsFor(workspaceEngine)}
                     </Grid>
                 </Grid>
             </Box>

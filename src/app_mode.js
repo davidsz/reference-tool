@@ -8,7 +8,7 @@ import { TextField, Stack, Switch, Slider, FormControlLabel } from "@mui/materia
 
 export const app_mode = {
     LOAD_SESSION: {
-        widgets: (
+        widgetsFor: (workspaceEngine) => (
             <RightSideWidget
                 name="Load session"
                 description="Restore your previous session from a .json file."
@@ -19,7 +19,7 @@ export const app_mode = {
         ),
     },
     SAVE_SESSION: {
-        widgets: (
+        widgetsFor: (workspaceEngine) => (
             <RightSideWidget
                 name="Save session"
                 description="Save your current session to a .json file."
@@ -30,30 +30,35 @@ export const app_mode = {
         ),
     },
     IMAGE: {
-        widgets: (
-            <>
-                <RightSideWidget
-                    name="Using local image"
-                    description="Select image file from your device."
-                    action={{ name: "Load", callback: () => { } }}
-                >
-                    <FileInput />
-                </RightSideWidget>
-                <RightSideWidget
-                    name="Image from URL"
-                    description="Load image from network using a HTTP/HTTPS address."
-                    action={{ name: "Load", callback: () => { } }}
-                >
-                    <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
-                        <PublicIcon />
-                        <TextField label="URL" variant="outlined" sx={{ flexGrow: 1 }} />
-                    </Stack>
-                </RightSideWidget>
-            </>
-        ),
+        widgetsFor: (workspaceEngine) => {
+            let file_;
+            let url_ = "";
+
+            return (
+                <>
+                    <RightSideWidget
+                        name="Using local image"
+                        description="Select image file from your device."
+                        action={{ name: "Load", callback: () => { workspaceEngine.loadLocalImage(file_) } }}
+                    >
+                        <FileInput onChange={(file) => file_ = file} />
+                    </RightSideWidget>
+                    <RightSideWidget
+                        name="Image from URL"
+                        description="Load image from network using a HTTP/HTTPS address."
+                        action={{ name: "Load", callback: () => workspaceEngine.loadImageURL(url_) }}
+                    >
+                        <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
+                            <PublicIcon />
+                            <TextField label="URL" onChange={(e) => url_ = e.target.value} variant="outlined" sx={{ flexGrow: 1 }} />
+                        </Stack>
+                    </RightSideWidget>
+                </>
+            );
+        },
     },
     RESIZE: {
-        widgets: (
+        widgetsFor: (workspaceEngine) => (
             <>
                 <RightSideWidget
                     name="Resize image"
@@ -74,7 +79,7 @@ export const app_mode = {
         ),
     },
     GRID: {
-        widgets: (
+        widgetsFor: (workspaceEngine) => (
             <>
                 <RightSideWidget
                     name="Automatic grid creation"
@@ -108,7 +113,7 @@ export const app_mode = {
         ),
     },
     COLORS: {
-        widgets: (
+        widgetsFor: (workspaceEngine) => (
             <RightSideWidget
                 name="Color filters"
                 description="A collection of quick filters to help with color validation."

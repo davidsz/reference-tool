@@ -9,7 +9,7 @@ function FileInput({ onChange }) {
         const files = Array.from(event.target.files);
         const [file] = files;
         setAttachment(file);
-        if (!!onChange) onChange({ value: file });
+        if (!!onChange) onChange(file);
     }
 
     return (
