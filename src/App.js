@@ -27,7 +27,6 @@ import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import Workspace from "./components/Workspace";
 
-
 export default function App() {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [appMode, setAppMode] = useState(app_mode.LOAD_SESSION);
@@ -128,7 +127,7 @@ export default function App() {
                         <Workspace onScroll={handleWorkspaceScroll} />
                     </Grid>
                     <Grid item xs={3}>
-                        {appMode.widgetsFor(workspaceEngine)}
+                        {appMode.widgets}
                     </Grid>
                 </Grid>
             </Box>
