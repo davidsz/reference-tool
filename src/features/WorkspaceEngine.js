@@ -1,22 +1,21 @@
-import { toFixedNumber } from "./math"
-import { grayscaleEffect } from "./color_filters"
-import { makeElementDraggable, attachRightClickHandler, attachLongRightClickHandler } from "./dom"
+import { getAspectRatio, toFixedNumber } from "./math";
+import { grayscaleEffect } from "./color_filters";
+import { makeElementDraggable, attachRightClickHandler, attachLongRightClickHandler } from "./dom";
 
 let instance;
 
 export const workspace_mode = {
-    GRID: 0,    // Lines, handles and distance labels
-    RESIZE: 1,  // Rectangular selection box on the image for resizing
-    CONST: 2,   // Show the lines and distances without interactivity
-    IMAGE: 3,   // Just the image
+    GRID: 0, // Lines, handles and distance labels
+    RESIZE: 1, // Rectangular selection box on the image for resizing
+    CONST: 2, // Show the lines and distances without interactivity
+    IMAGE: 3, // Just the image
 };
-const HANDLE_CENTER = 4;    // Half of default handle size
+const HANDLE_CENTER = 4; // Half of default handle size
 const LABEL_BAR_WIDTH = 30; // Size of label bars
 
 class WorkspaceEngine {
     constructor() {
-        if (instance)
-            throw new Error("You can only create one instance of WorkspaceEngine.");
+        if (instance) throw new Error("You can only create one instance of WorkspaceEngine.");
         instance = this;
 
         // The canvas element. UI bindings always try to keep it as large as possible.
@@ -53,6 +52,9 @@ class WorkspaceEngine {
         // Handles for resize mode
         // Same as grid points, but just only two points
         this.resize_points = [];
+
+        // Keep ratio of resize rectangle when interacting with resize handles
+        this.keep_aspect_ratio = false;
 
         // DOM container of grid and resize handler points
         this.handles_container = null;
@@ -156,7 +158,7 @@ class WorkspaceEngine {
             let current_x = this.image_width * (x_axis[i] / 100) + this.image_x;
             this.distance_labels_x.push({
                 text_center_x: previous_x + (current_x - previous_x) / 2,
-                value: Math.round((x_axis[i] / 100 * this.virtual_width) - (x_axis[i - 1] / 100 * this.virtual_width))
+                value: Math.round((x_axis[i] / 100) * this.virtual_width - (x_axis[i - 1] / 100) * this.virtual_width),
             });
             previous_x = current_x;
         }
@@ -167,7 +169,7 @@ class WorkspaceEngine {
             let current_y = this.image_height * (y_axis[i] / 100) + this.image_y;
             this.distance_labels_y.push({
                 text_center_y: previous_y + (current_y - previous_y) / 2,
-                value: Math.round((y_axis[i] / 100 * this.virtual_height) - (y_axis[i - 1] / 100 * this.virtual_height))
+                value: Math.round((y_axis[i] / 100) * this.virtual_height - (y_axis[i - 1] / 100) * this.virtual_height),
             });
             previous_y = current_y;
         }
@@ -179,11 +181,11 @@ class WorkspaceEngine {
 
         canvas_element.oncontextmenu = (e) => e.preventDefault();
 
-        if ('wakeLock' in navigator) {
-            this.wakeLockSentinel = navigator.wakeLock.request('screen');
-            document.addEventListener('visibilitychange', async () => {
-                if (this.wakeLockSentinel !== null && document.visibilityState === 'visible')
-                    this.wakeLockSentinel = await navigator.wakeLock.request('screen');
+        if ("wakeLock" in navigator) {
+            this.wakeLockSentinel = navigator.wakeLock.request("screen");
+            document.addEventListener("visibilitychange", async () => {
+                if (this.wakeLockSentinel !== null && document.visibilityState === "visible")
+                    this.wakeLockSentinel = await navigator.wakeLock.request("screen");
             });
         }
     }
@@ -201,14 +203,19 @@ class WorkspaceEngine {
             context = this.canvas.getContext("2d");
 
         context.clearRect(0, 0, canvas_width, canvas_height);
-        context.drawImage(this.image,
-            this.source_x, this.source_y,
-            this.source_width, this.source_height,
-            this.image_x, this.image_y,
-            this.image_width, this.image_height);
+        context.drawImage(
+            this.image,
+            this.source_x,
+            this.source_y,
+            this.source_width,
+            this.source_height,
+            this.image_x,
+            this.image_y,
+            this.image_width,
+            this.image_height
+        );
 
-        if (this.grayscale_)
-            grayscaleEffect(this.canvas, context);
+        if (this.grayscale_) grayscaleEffect(this.canvas, context);
 
         if (this.mode === workspace_mode.RESIZE) {
             // Rectangle for resize dimensions
@@ -223,8 +230,7 @@ class WorkspaceEngine {
             context.rect(p1_x, p1_y, p2_x - p1_x, p2_y - p1_y);
             context.stroke();
             return;
-        } else if (this.mode === workspace_mode.IMAGE)
-            return;
+        } else if (this.mode === workspace_mode.IMAGE) return;
 
         // Lines on the top of the image
         context.strokeStyle = this.grid_color_;
@@ -300,8 +306,7 @@ class WorkspaceEngine {
 
     addGridPoint(local_x, local_y) {
         // Do not add new points in other modes
-        if (this.mode !== workspace_mode.GRID)
-            return;
+        if (this.mode !== workspace_mode.GRID) return;
 
         // Interactive handle for the point
         let point = this.constructGridPoint(
@@ -310,8 +315,8 @@ class WorkspaceEngine {
         );
 
         // Visual position of the interactive handle
-        point.style.top = (local_y - HANDLE_CENTER) + "px";
-        point.style.left = (local_x - HANDLE_CENTER) + "px";
+        point.style.top = local_y - HANDLE_CENTER + "px";
+        point.style.left = local_x - HANDLE_CENTER + "px";
 
         // Insert the newly created point and its handle
         this.handles_container.appendChild(point);
@@ -388,9 +393,8 @@ class WorkspaceEngine {
         }
 
         for (let i = u; i < v; i++) {
-            let point = n > m
-                ? this.constructGridPoint(i * horizontal_part, 100)
-                : this.constructGridPoint(100, i * vertical_part);
+            let point =
+                n > m ? this.constructGridPoint(i * horizontal_part, 100) : this.constructGridPoint(100, i * vertical_part);
             point.horizontal = m > n;
             point.vertical = n > m;
             this.handles_container.appendChild(point);
@@ -403,23 +407,21 @@ class WorkspaceEngine {
     }
 
     clearGridPoints() {
-        while (this.grid_points.length > 0)
-            this.grid_points.pop().remove();
+        while (this.grid_points.length > 0) this.grid_points.pop().remove();
     }
 
     updateHandles() {
         [...this.grid_points, ...this.resize_points].forEach((point) => {
             let local_x = this.image_width * (point.x / 100) + this.image_x;
             let local_y = this.image_height * (point.y / 100) + this.image_y;
-            point.style.top = (local_y - HANDLE_CENTER) + "px";
-            point.style.left = (local_x - HANDLE_CENTER) + "px";
+            point.style.top = local_y - HANDLE_CENTER + "px";
+            point.style.left = local_x - HANDLE_CENTER + "px";
         });
     }
 
     showGridHandles(show) {
         let css_visibility = show ? "visible" : "hidden";
-        for (let i = 0, length = this.grid_points.length; i < length; i++)
-            this.grid_points[i].style.visibility = css_visibility;
+        for (let i = 0, length = this.grid_points.length; i < length; i++) this.grid_points[i].style.visibility = css_visibility;
     }
 
     showResizeHandles(show) {
@@ -440,8 +442,8 @@ class WorkspaceEngine {
                     local_x += this.image_width;
                     local_y += this.image_height;
                 }
-                point.style.top = (local_y - HANDLE_CENTER) + "px";
-                point.style.left = (local_x - HANDLE_CENTER) + "px";
+                point.style.top = local_y - HANDLE_CENTER + "px";
+                point.style.left = local_x - HANDLE_CENTER + "px";
 
                 // Position in percentage, relative to the image on canvas
                 if (i === 0) {
@@ -454,26 +456,47 @@ class WorkspaceEngine {
 
                 // Resize selection rectangle when moving the handle
                 makeElementDraggable(point, (global_x, global_y) => {
-                    point.x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5);
-                    point.y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
+                    let x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5),
+                        y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
+                    
+                    if (this.keep_aspect_ratio) {
+                        // TODO: Keep aspect ratio
+                        let ar = this.getResizeAspectRatio();
+                        console.log(ar);
+                        let diff_x = x - point.x,
+                            diff_y = y - point.y;
+                        // let diff_ratio = getAspectRatio(diff_x, diff_y);
+
+                        if (diff_x == 0)
+                            return;
+                        y = toFixedNumber(point.y * parseInt(ar.width / diff_x), 5);
+                        console.log(y, point.y, parseInt(ar.width / diff_x), ar.width, diff_x);
+                    }
+                    
+                    point.x = x;
+                    point.y = y;
                     this.redraw();
                 });
 
                 // Move selection rectangle on right click dragging
-                makeElementDraggable(point, (global_x, global_y) => {
-                    let other_point = this.resize_points[i === 0 ? 1 : 0];
-                    let prev_x = point.x,
-                        prev_y = point.y;
-                    point.x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5);
-                    point.y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
+                makeElementDraggable(
+                    point,
+                    (global_x, global_y) => {
+                        let other_point = this.resize_points[i === 0 ? 1 : 0];
+                        let prev_x = point.x,
+                            prev_y = point.y;
+                        point.x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5);
+                        point.y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
 
-                    other_point.x += point.x - prev_x;
-                    other_point.y += point.y - prev_y;
-                    other_point.style.top = ((this.image_height * (other_point.y / 100) + this.image_y) - HANDLE_CENTER) + "px";
-                    other_point.style.left = ((this.image_width * (other_point.x / 100) + this.image_x) - HANDLE_CENTER) + "px";
+                        other_point.x += point.x - prev_x;
+                        other_point.y += point.y - prev_y;
+                        other_point.style.top = this.image_height * (other_point.y / 100) + this.image_y - HANDLE_CENTER + "px";
+                        other_point.style.left = this.image_width * (other_point.x / 100) + this.image_x - HANDLE_CENTER + "px";
 
-                    this.redraw();
-                }, 2);
+                        this.redraw();
+                    },
+                    2
+                );
 
                 // Insert the newly created point and its handle
                 this.handles_container.appendChild(point);
@@ -482,13 +505,11 @@ class WorkspaceEngine {
             return;
         }
 
-        for (let i = 0; i < 2; i++)
-            this.resize_points[i].style.visibility = css_visibility;
+        for (let i = 0; i < 2; i++) this.resize_points[i].style.visibility = css_visibility;
     }
 
     resetResizeHandles() {
-        if (!this.resize_points.length)
-            return;
+        if (!this.resize_points.length) return;
 
         let point_a = this.resize_points[0],
             point_b = this.resize_points[1];
@@ -533,15 +554,33 @@ class WorkspaceEngine {
         this.redraw();
     }
 
-    setResizeDimensions(virtual_width, virtual_height) {
+    getResizeAspectRatio() {
+        // TODO: Refactor
+
+        // Determine top left point of the rectangle
+        let point_a = this.resize_points[0],
+            point_b = this.resize_points[1];
+        let top_left_index = 0;
+        if (point_a.x < point_b.x) top_left_index = 0;
+        else if (point_a.x > point_b.x) top_left_index = 1;
+        else return;
+        point_a = this.resize_points[top_left_index];
+        point_b = this.resize_points[top_left_index === 0 ? 1 : 0];
+
+        let resize_width = this.source_width * ((point_b.x - point_a.x) / 100);
+        let resize_height = this.source_height * ((point_b.y - point_a.y) / 100);
+        return getAspectRatio(resize_width, resize_height);
+    }
+
+    setResizeAspectRatio(width, height) {
         let point_a = this.resize_points[0],
             point_b = this.resize_points[1],
             top_left_index = point_a.x <= point_b.x ? 0 : 1;
         point_a = this.resize_points[top_left_index];
         point_b = this.resize_points[top_left_index === 0 ? 1 : 0];
 
-        point_b.x = point_a.x + virtual_width;
-        point_b.y = point_a.y + virtual_height;
+        point_b.x = point_a.x + width;
+        point_b.y = point_a.y + height;
         this.updateHandles();
         this.redraw();
     }

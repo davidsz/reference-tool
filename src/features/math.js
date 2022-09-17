@@ -4,3 +4,19 @@ export function toFixedNumber(num, digits, base) {
     var pow = Math.pow(base || 10, digits);
     return Math.round(num * pow) / pow;
 }
+
+export function greatestCommonDivisor(x, y) {
+    x = Math.abs(x);
+    y = Math.abs(y);
+    while (y) {
+        let t = y;
+        y = x % y;
+        x = t;
+    }
+    return x;
+}
+
+export function getAspectRatio(w, h) {
+    let gcd = greatestCommonDivisor(w, h);
+    return { width: parseInt(w / gcd), height: parseInt(h / gcd) };
+}
