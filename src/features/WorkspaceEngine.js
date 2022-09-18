@@ -458,23 +458,30 @@ class WorkspaceEngine {
                 makeElementDraggable(point, (global_x, global_y) => {
                     let x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5),
                         y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
-                    
-                    if (this.keep_aspect_ratio) {
-                        // TODO: Keep aspect ratio
-                        let ar = this.getResizeAspectRatio();
-                        console.log(ar);
-                        let diff_x = x - point.x,
-                            diff_y = y - point.y;
-                        // let diff_ratio = getAspectRatio(diff_x, diff_y);
 
-                        if (diff_x == 0)
-                            return;
-                        y = toFixedNumber(point.y * parseInt(ar.width / diff_x), 5);
-                        console.log(y, point.y, parseInt(ar.width / diff_x), ar.width, diff_x);
+                    if (this.keep_aspect_ratio) {
+                        let ar = this.getResizeAspectRatio();
+                        let diff_x = toFixedNumber(x - point.x, 5),
+                            diff_y = toFixedNumber(y - point.y, 5);
+
+                        // FIXME: Handle the case where the two points are equal
+                        // FIXME: Crashes when freeformed/moved, then resized with AR
+
+                        // TODO: Try to adjust only the necessary side of rectangle
+                        // if (diff_x > diff_y) {
+                            let grow_y_percent = (diff_x / ar.width) * ar.height;
+                            y = toFixedNumber(y + grow_y_percent, 5);
+                            console.log("y", grow_y_percent, y);
+                        // } else if (diff_y > diff_x) {
+                            let grow_x_percent = (diff_y / ar.height) * ar.width;
+                            x = toFixedNumber(x + grow_x_percent, 5);
+                            console.log("x", grow_x_percent, x);
+                        // }
                     }
-                    
+
                     point.x = x;
                     point.y = y;
+                    if (this.keep_aspect_ratio) this.updateHandles();
                     this.redraw();
                 });
 
@@ -567,9 +574,10 @@ class WorkspaceEngine {
         point_a = this.resize_points[top_left_index];
         point_b = this.resize_points[top_left_index === 0 ? 1 : 0];
 
-        let resize_width = this.source_width * ((point_b.x - point_a.x) / 100);
-        let resize_height = this.source_height * ((point_b.y - point_a.y) / 100);
-        return getAspectRatio(resize_width, resize_height);
+        let resize_width = point_b.x - point_a.x;
+        let resize_height = point_b.y - point_a.y;
+        let ar = getAspectRatio(resize_width, resize_height);
+        return ar;
     }
 
     setResizeAspectRatio(width, height) {

@@ -17,6 +17,6 @@ export function greatestCommonDivisor(x, y) {
 }
 
 export function getAspectRatio(w, h) {
-    let gcd = greatestCommonDivisor(w, h);
+    let gcd = toFixedNumber(greatestCommonDivisor(w, h), 5);
     return { width: parseInt(w / gcd), height: parseInt(h / gcd) };
 }

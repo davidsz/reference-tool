@@ -24,7 +24,6 @@ function Workspace({ onScroll }) {
     const addGridPoint = (e) => {
         let x = Math.round(e.pageX - e.target.getBoundingClientRect().left);
         let y = Math.round(e.pageY - e.target.getBoundingClientRect().top);
-        console.log(x, y);
         workspaceEngine.addGridPoint(x, y);
     };
 
