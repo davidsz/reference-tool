@@ -54,7 +54,9 @@ class WorkspaceEngine {
         this.resize_points = [];
 
         // Keep ratio of resize rectangle when interacting with resize handles
-        this.keep_aspect_ratio = false;
+        this.keep_aspect_ratio_ = false;
+        // Lock resize points and move along this line when keeping aspect ratio
+        this.aspect_ratio_line_ = {a: [0, 0], b: [0, 0]};
 
         // DOM container of grid and resize handler points
         this.handles_container = null;
@@ -94,6 +96,19 @@ class WorkspaceEngine {
         this.image_height = image_height;
 
         this.updateDistanceLabels();
+    }
+
+    get keep_aspect_ratio() {
+        return this.keep_aspect_ratio_;
+    }
+
+    set keep_aspect_ratio(val) {
+        this.keep_aspect_ratio_ = val;
+        if (!this.resize_points.length) return;
+        this.aspect_ratio_line_ = {
+            a : [this.resize_points[0].x, this.resize_points[0].y],
+            b : [this.resize_points[1].x, this.resize_points[1].y]
+        };
     }
 
     get scale() {
@@ -460,23 +475,21 @@ class WorkspaceEngine {
                         y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
 
                     if (this.keep_aspect_ratio) {
-                        let ar = this.getResizeAspectRatio();
-                        let diff_x = toFixedNumber(x - point.x, 5),
-                            diff_y = toFixedNumber(y - point.y, 5);
+                        // Determine a unit vector to move with
+                        let x_direction = this.aspect_ratio_line_.b[0] - this.aspect_ratio_line_.a[0];
+                        let y_direction = this.aspect_ratio_line_.b[1] - this.aspect_ratio_line_.a[1];
+                        let magnitude = Math.sqrt(x_direction * x_direction + y_direction * y_direction);
+                        let x_unit = x_direction / magnitude;
+                        let y_unit = y_direction / magnitude;
 
-                        // FIXME: Handle the case where the two points are equal
-                        // FIXME: Crashes when freeformed/moved, then resized with AR
+                        // Move always with the same unit to avoid problems from too short mouse events
+                        let diff = -0.4;
+                        // TODO: Find a smoother solution to determine direction
+                        if (x - point.x >= 0)
+                            diff *= -1;
 
-                        // TODO: Try to adjust only the necessary side of rectangle
-                        // if (diff_x > diff_y) {
-                            let grow_y_percent = (diff_x / ar.width) * ar.height;
-                            y = toFixedNumber(y + grow_y_percent, 5);
-                            console.log("y", grow_y_percent, y);
-                        // } else if (diff_y > diff_x) {
-                            let grow_x_percent = (diff_y / ar.height) * ar.width;
-                            x = toFixedNumber(x + grow_x_percent, 5);
-                            console.log("x", grow_x_percent, x);
-                        // }
+                        x = point.x + x_unit * diff;
+                        y = point.y + y_unit * diff;
                     }
 
                     point.x = x;
