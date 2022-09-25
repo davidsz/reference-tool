@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { WorkspaceContext } from "../..";
 import RightSideWidget from "./RightSideWidget";
 import { Stack, TextField, Slider } from "@mui/material";
@@ -7,25 +7,41 @@ import ContrastIcon from "@mui/icons-material/Contrast";
 
 function GridWidgets() {
     const workspaceEngine = useContext(WorkspaceContext);
+    const [autoGridSize, setAutoGridSize] = useState([0, 0]);
 
     return (
         <>
             <RightSideWidget
                 name="Automatic grid creation"
                 description="Generate a simple grid with uniform cell sizes by specifying the amount of cells in both directions."
-                action={{ name: "Create", callback: () => {} }}
-            >
+                action={{
+                    name: "Create",
+                    callback: () => {
+                        workspaceEngine.generateGrid(autoGridSize[0], autoGridSize[1]);
+                    },
+                }}>
                 <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
-                    <TextField label="Horizontal" variant="outlined" />
+                    <TextField
+                        label="Horizontal"
+                        variant="outlined"
+                        onChange={(e) => {
+                            setAutoGridSize([parseInt(e.target.value), autoGridSize[1]]);
+                        }}
+                    />
                     <CloseIcon />
-                    <TextField label="Vertical" variant="outlined" />
+                    <TextField
+                        label="Vertical"
+                        variant="outlined"
+                        onChange={(e) => {
+                            setAutoGridSize([autoGridSize[0], parseInt(e.target.value)]);
+                        }}
+                    />
                 </Stack>
             </RightSideWidget>
             <RightSideWidget
                 name="Virtual size"
                 description="You can provide an image size without specifying the unit. These numbers will be used to calculate distances between grid points."
-                action={{ name: "Refresh", callback: () => {} }}
-            >
+                action={{ name: "Refresh", callback: () => {} }}>
                 <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
                     <TextField label="Width" variant="outlined" />
                     <CloseIcon />
@@ -35,7 +51,13 @@ function GridWidgets() {
             <RightSideWidget name="Line color" description="">
                 <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
                     <ContrastIcon />
-                    <Slider defaultValue={50} />
+                    <Slider
+                        defaultValue={50}
+                        onChange={(e) => {
+                            console.log(e.target.value);
+                            workspaceEngine.grid_color = "hsl(0, 0%, " + (100 - parseInt(e.target.value)) + "%)";
+                        }}
+                    />
                 </Stack>
             </RightSideWidget>
         </>

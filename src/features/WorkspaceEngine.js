@@ -122,11 +122,11 @@ class WorkspaceEngine {
         this.redraw();
     }
 
-    get gridColor() {
+    get grid_color() {
         return this.grid_color_;
     }
 
-    set gridColor(val) {
+    set grid_color(val) {
         this.grid_color_ = val;
         [...this.grid_points, ...this.resize_points].forEach((point) => {
             point.style.backgroundColor = val;
