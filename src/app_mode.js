@@ -1,35 +1,19 @@
 import { workspace_mode } from "./features/WorkspaceEngine";
-import RightSideWidget from "./components/right_side/RightSideWidget";
-import FileInput from "./components/FileInput";
 import ColorsWidgets from "./components/right_side/ColorsWidgets";
 import ImageWidgets from "./components/right_side/ImageWidgets";
 import ResizeWidgets from "./components/right_side/ResizeWidgets";
 import GridWidgets from "./components/right_side/GridWidgets";
+import LoadSessionWidgets from "./components/right_side/LoadSessionWidgets";
+import SaveSessionWidgets from "./components/right_side/SaveSessionWidgets";
 
 export const app_mode = {
     LOAD_SESSION: {
         workspaceMode: workspace_mode.CONST,
-        widgets: (
-            <RightSideWidget
-                name="Load session"
-                description="Restore your previous session from a .json file."
-                action={{ name: "Restore", callback: () => { } }}
-            >
-                <FileInput />
-            </RightSideWidget>
-        ),
+        widgets: <LoadSessionWidgets />,
     },
     SAVE_SESSION: {
         workspace_mode: workspace_mode.CONST,
-        widgets: (
-            <RightSideWidget
-                name="Save session"
-                description="Save your current session to a .json file."
-                action={{ name: "Save", callback: () => { } }}
-            >
-                <FileInput />
-            </RightSideWidget>
-        ),
+        widgets: <SaveSessionWidgets />,
     },
     IMAGE: {
         workspaceMode: workspace_mode.IMAGE,

@@ -1,6 +1,7 @@
 import { getAspectRatio, toFixedNumber } from "./math";
 import { grayscaleEffect } from "./color_filters";
 import { makeElementDraggable, attachRightClickHandler, attachLongRightClickHandler } from "./dom";
+import { imageToDataURL } from "./helper";
 
 let instance;
 
@@ -637,6 +638,50 @@ class WorkspaceEngine {
             this.redraw();
         };
         this.image.src = url;
+    }
+
+    exportAsJSON() {
+        let json = {
+            image: imageToDataURL(this.image),
+            mode: this.mode,
+            source_x: this.source_x,
+            source_y: this.source_y,
+            source_width: this.source_width,
+            source_height: this.source_height,
+            image_x: this.image_x,
+            image_y: this.image_y,
+            image_width: this.image_width,
+            image_height: this.image_height,
+            scale_: this.scale_,
+            grid_points: [],
+            resize_points: [],
+            keep_aspect_ratio_: this.keep_aspect_ratio_,
+            aspect_ratio_line_: this.aspect_ratio_line_,
+            grid_color_: this.grid_color_,
+            grayscale_: this.grayscale_,
+            virtual_width: this.virtual_width,
+            virtual_height: this.virtual_height,
+        };
+        this.grid_points.forEach((point) => {
+            json.grid_points.push({
+                x: point.x,
+                y: point.y,
+                horizontal: point.horizontal,
+                vertical: point.vertical,
+            });
+        });
+        this.resize_points.forEach((point) => {
+            json.resize_points.push({
+                x: point.x,
+                y: point.y,
+            });
+        });
+
+        return json;
+    }
+
+    importFromJSON() {
+
     }
 }
 
