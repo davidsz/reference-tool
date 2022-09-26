@@ -1,5 +1,5 @@
 import { WorkspaceContext } from ".";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { app_mode } from "./app_mode";
 import {
     Box,
@@ -35,6 +35,13 @@ export default function App() {
 
     const workspaceEngine = useContext(WorkspaceContext);
 
+    useEffect(() => {
+        document.documentElement.addEventListener("fullscreenchange", () => {
+            setFullscreenMode(!!document.fullscreenElement);
+            // TODO: Load previous state of workspace
+        });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
     const changeAppMode = (mode) => {
         setAppMode(() => {
             workspaceEngine.setMode(mode.workspaceMode);
@@ -55,82 +62,97 @@ export default function App() {
     return (
         <Box sx={{ display: "flex" }}>
             <CssBaseline />
+            {!fullscreenMode && (
+                <>
+                    <TopBar drawerOpen={drawerOpen} openDrawer={() => setDrawerOpen(true)}>
+                        <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1 }}>
+                            Ferenc - Reference tool
+                        </Typography>
+                        <Stack spacing={2} direction="row" sx={{ minWidth: 650, mr: 5 }} alignItems="center">
+                            <ZoomOutIcon />
+                            <Slider value={zoomValue} min={50} max={250} onChange={(e, value) => {
+                                workspaceEngine.scale = value / 100;
+                                setZoomValue(value);
+                            }} />
+                            <ZoomInIcon />
+                        </Stack>
+                        <IconButton
+                            color="inherit"
+                            onClick={() => {
+                                if (document.fullscreenElement)
+                                    document.exitFullscreen();
+                                else {
+                                    // TODO: Save current state of workspace
+                                    document.documentElement.requestFullscreen();
+                                }
+                            }}
+                        >
+                            <FullscreenIcon />
+                        </IconButton>
+                    </TopBar>
 
-            <TopBar drawerOpen={drawerOpen} openDrawer={() => setDrawerOpen(true)}>
-                <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1 }}>
-                    Ferenc - Reference tool
-                </Typography>
-                <Stack spacing={2} direction="row" sx={{ minWidth: 650, mr: 5 }} alignItems="center">
-                    <ZoomOutIcon />
-                    <Slider value={zoomValue} min={50} max={250} onChange={(e, value) => {
-                        workspaceEngine.scale = value / 100;
-                        setZoomValue(value);
-                    }} />
-                    <ZoomInIcon />
-                </Stack>
-                <IconButton
-                    color="inherit"
-                    onClick={() => {
-                        setFullscreenMode(!fullscreenMode);
-                    }}
-                >
-                    <FullscreenIcon />
-                </IconButton>
-            </TopBar>
+                    <LeftDrawer drawerOpen={drawerOpen} closeDrawer={() => setDrawerOpen(false)}>
+                        <List>
+                            <LeftDrawerItem
+                                text="Load session"
+                                icon={<RestorePageRoundedIcon />}
+                                onClick={() => changeAppMode(app_mode.LOAD_SESSION)}
+                            />
+                            <LeftDrawerItem
+                                text="Save session"
+                                icon={<SaveRoundedIcon />}
+                                onClick={() => changeAppMode(app_mode.SAVE_SESSION)}
+                            />
+                        </List>
+                        <Divider />
+                        <List>
+                            <LeftDrawerItem
+                                text="Image"
+                                icon={<ImageRoundedIcon />}
+                                onClick={() => changeAppMode(app_mode.IMAGE)}
+                            />
+                            <LeftDrawerItem
+                                text="Resize"
+                                icon={<CropRoundedIcon />}
+                                onClick={() => changeAppMode(app_mode.RESIZE)}
+                            />
+                            <LeftDrawerItem
+                                text="Grid"
+                                icon={<Grid4x4RoundedIcon />}
+                                onClick={() => changeAppMode(app_mode.GRID)}
+                            />
+                            <LeftDrawerItem
+                                text="Colors"
+                                icon={<PaletteRoundedIcon />}
+                                onClick={() => changeAppMode(app_mode.COLORS)}
+                            />
+                        </List>
+                        <Divider />
+                        <List>
+                            <LeftDrawerItem text="Reset" icon={<RestartAltRoundedIcon />} />
+                        </List>
+                    </LeftDrawer>
 
-            <LeftDrawer drawerOpen={drawerOpen} closeDrawer={() => setDrawerOpen(false)}>
-                <List>
-                    <LeftDrawerItem
-                        text="Load session"
-                        icon={<RestorePageRoundedIcon />}
-                        onClick={() => changeAppMode(app_mode.LOAD_SESSION)}
-                    />
-                    <LeftDrawerItem
-                        text="Save session"
-                        icon={<SaveRoundedIcon />}
-                        onClick={() => changeAppMode(app_mode.SAVE_SESSION)}
-                    />
-                </List>
-                <Divider />
-                <List>
-                    <LeftDrawerItem
-                        text="Image"
-                        icon={<ImageRoundedIcon />}
-                        onClick={() => changeAppMode(app_mode.IMAGE)}
-                    />
-                    <LeftDrawerItem
-                        text="Resize"
-                        icon={<CropRoundedIcon />}
-                        onClick={() => changeAppMode(app_mode.RESIZE)}
-                    />
-                    <LeftDrawerItem
-                        text="Grid"
-                        icon={<Grid4x4RoundedIcon />}
-                        onClick={() => changeAppMode(app_mode.GRID)}
-                    />
-                    <LeftDrawerItem
-                        text="Colors"
-                        icon={<PaletteRoundedIcon />}
-                        onClick={() => changeAppMode(app_mode.COLORS)}
-                    />
-                </List>
-                <Divider />
-                <List>
-                    <LeftDrawerItem text="Reset" icon={<RestartAltRoundedIcon />} />
-                </List>
-            </LeftDrawer>
-
-            <Box component="main" sx={{ display: "flex", flexDirection: "column", flexGrow: 1, p: 2, height: "100vh" }}>
-                <LeftDrawerHeader />
-                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                    <Grid item xs={9}>
+                    <Box component="main" sx={{ display: "flex", flexDirection: "column", flexGrow: 1, p: 2, height: "100vh" }}>
+                        <LeftDrawerHeader />
+                        <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                            <Grid item xs={9}>
+                                <Workspace onScroll={handleWorkspaceScroll} />
+                            </Grid>
+                            <Grid item xs={3}>
+                                {appMode.widgets}
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </>
+            )}
+            {fullscreenMode && (
+                <Grid container sx={{ flexGrow: 1, height: "100vh" }}>
+                    <Grid item xs={12}>
                         <Workspace onScroll={handleWorkspaceScroll} />
                     </Grid>
-                    <Grid item xs={3}>
-                        {appMode.widgets}
-                    </Grid>
                 </Grid>
-            </Box>
+            )}
         </Box>
     );
 }
