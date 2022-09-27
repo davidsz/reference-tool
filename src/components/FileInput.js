@@ -17,7 +17,7 @@ function FileInput({ onChange }) {
             <Stack spacing={2} direction="row" alignItems="center">
                 <InsertDriveFileIcon color="inherit" />
                 <Typography noWrap>{attachment?.name || "Select file"}</Typography>
-                <input type="file" accept="image/*" hidden onChange={handleChange} />
+                <input type="file" hidden onChange={handleChange} />
             </Stack>
         </Button>
     );

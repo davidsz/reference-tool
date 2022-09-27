@@ -57,7 +57,7 @@ class WorkspaceEngine {
         // Keep ratio of resize rectangle when interacting with resize handles
         this.keep_aspect_ratio_ = false;
         // Lock resize points and move along this line when keeping aspect ratio
-        this.aspect_ratio_line_ = {a: [0, 0], b: [0, 0]};
+        this.aspect_ratio_line_ = { a: [0, 0], b: [0, 0] };
 
         // DOM container of grid and resize handler points
         this.handles_container = null;
@@ -107,8 +107,8 @@ class WorkspaceEngine {
         this.keep_aspect_ratio_ = val;
         if (!this.resize_points.length) return;
         this.aspect_ratio_line_ = {
-            a : [this.resize_points[0].x, this.resize_points[0].y],
-            b : [this.resize_points[1].x, this.resize_points[1].y]
+            a: [this.resize_points[0].x, this.resize_points[0].y],
+            b: [this.resize_points[1].x, this.resize_points[1].y],
         };
     }
 
@@ -440,88 +440,90 @@ class WorkspaceEngine {
         for (let i = 0, length = this.grid_points.length; i < length; i++) this.grid_points[i].style.visibility = css_visibility;
     }
 
+    constructResizePoint(x, y, n) {
+        // Interactive handle for the point
+        let point = document.createElement("div");
+        point.classList.add("grid-handle");
+
+        point.x = x;
+        point.y = y;
+
+        // Resize selection rectangle when moving the handle
+        makeElementDraggable(point, (global_x, global_y) => {
+            let x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5),
+                y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
+
+            if (this.keep_aspect_ratio) {
+                // Determine a unit vector to move with
+                let x_direction = this.aspect_ratio_line_.b[0] - this.aspect_ratio_line_.a[0];
+                let y_direction = this.aspect_ratio_line_.b[1] - this.aspect_ratio_line_.a[1];
+                let magnitude = Math.sqrt(x_direction * x_direction + y_direction * y_direction);
+                let x_unit = x_direction / magnitude;
+                let y_unit = y_direction / magnitude;
+
+                // Move always with the same unit to avoid problems from too short mouse events
+                let diff = -0.4;
+                // TODO: Find a smoother solution to determine direction
+                if (x - point.x >= 0) diff *= -1;
+
+                x = point.x + x_unit * diff;
+                y = point.y + y_unit * diff;
+            }
+
+            point.x = x;
+            point.y = y;
+            if (this.keep_aspect_ratio) this.updateHandles();
+            this.redraw();
+        });
+
+        // Move selection rectangle on right click dragging
+        makeElementDraggable(
+            point,
+            (global_x, global_y) => {
+                let other_point = this.resize_points[n === 0 ? 1 : 0];
+                let prev_x = point.x,
+                    prev_y = point.y;
+                point.x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5);
+                point.y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
+
+                other_point.x += point.x - prev_x;
+                other_point.y += point.y - prev_y;
+                other_point.style.top = this.image_height * (other_point.y / 100) + this.image_y - HANDLE_CENTER + "px";
+                other_point.style.left = this.image_width * (other_point.x / 100) + this.image_x - HANDLE_CENTER + "px";
+
+                this.redraw();
+            },
+            2
+        );
+
+        // Insert the newly created point and its handle
+        this.handles_container.appendChild(point);
+        this.resize_points.push(point);
+        return point;
+    }
+
     showResizeHandles(show) {
         let css_visibility = show ? "visible" : "hidden";
 
         // Initialize resize handles for the first time
         if (!this.resize_points.length) {
             for (let i = 0; i < 2; i++) {
-                // Interactive handle for the point
-                let point = document.createElement("div");
-                point.classList.add("grid-handle");
-                point.style.visibility = css_visibility;
-
-                // Visual position of the interactive handle
                 let local_x = this.image_x,
                     local_y = this.image_y;
-                if (i === 1) {
+
+                // Interactive handle for the point
+                let point;
+                if (i === 0) point = this.constructResizePoint(0, 0, i);
+                else {
+                    point = this.constructResizePoint(100, 100, i);
                     local_x += this.image_width;
                     local_y += this.image_height;
                 }
+
+                // Visual position of the interactive handle
                 point.style.top = local_y - HANDLE_CENTER + "px";
                 point.style.left = local_x - HANDLE_CENTER + "px";
-
-                // Position in percentage, relative to the image on canvas
-                if (i === 0) {
-                    point.x = 0;
-                    point.y = 0;
-                } else {
-                    point.x = 100;
-                    point.y = 100;
-                }
-
-                // Resize selection rectangle when moving the handle
-                makeElementDraggable(point, (global_x, global_y) => {
-                    let x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5),
-                        y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
-
-                    if (this.keep_aspect_ratio) {
-                        // Determine a unit vector to move with
-                        let x_direction = this.aspect_ratio_line_.b[0] - this.aspect_ratio_line_.a[0];
-                        let y_direction = this.aspect_ratio_line_.b[1] - this.aspect_ratio_line_.a[1];
-                        let magnitude = Math.sqrt(x_direction * x_direction + y_direction * y_direction);
-                        let x_unit = x_direction / magnitude;
-                        let y_unit = y_direction / magnitude;
-
-                        // Move always with the same unit to avoid problems from too short mouse events
-                        let diff = -0.4;
-                        // TODO: Find a smoother solution to determine direction
-                        if (x - point.x >= 0)
-                            diff *= -1;
-
-                        x = point.x + x_unit * diff;
-                        y = point.y + y_unit * diff;
-                    }
-
-                    point.x = x;
-                    point.y = y;
-                    if (this.keep_aspect_ratio) this.updateHandles();
-                    this.redraw();
-                });
-
-                // Move selection rectangle on right click dragging
-                makeElementDraggable(
-                    point,
-                    (global_x, global_y) => {
-                        let other_point = this.resize_points[i === 0 ? 1 : 0];
-                        let prev_x = point.x,
-                            prev_y = point.y;
-                        point.x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5);
-                        point.y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
-
-                        other_point.x += point.x - prev_x;
-                        other_point.y += point.y - prev_y;
-                        other_point.style.top = this.image_height * (other_point.y / 100) + this.image_y - HANDLE_CENTER + "px";
-                        other_point.style.left = this.image_width * (other_point.x / 100) + this.image_x - HANDLE_CENTER + "px";
-
-                        this.redraw();
-                    },
-                    2
-                );
-
-                // Insert the newly created point and its handle
-                this.handles_container.appendChild(point);
-                this.resize_points.push(point);
+                point.style.visibility = css_visibility;
             }
             return;
         }
@@ -642,7 +644,7 @@ class WorkspaceEngine {
 
     exportAsJSON() {
         let json = {
-            image: imageToDataURL(this.image),
+            imageURI: imageToDataURL(this.image),
             mode: this.mode,
             source_x: this.source_x,
             source_y: this.source_y,
@@ -680,8 +682,47 @@ class WorkspaceEngine {
         return json;
     }
 
-    importFromJSON() {
+    importFromJSON(json) {
+        this.image.src = json.imageURI;
+        this.mode = json.mode;
+        this.source_x = json.source_x;
+        this.source_y = json.source_y;
+        this.source_width = json.source_width;
+        this.source_height = json.source_height;
+        this.image_x = json.image_x;
+        this.image_y = json.image_y;
+        this.image_width = json.image_width;
+        this.image_height = json.image_height;
+        this.scale_ = json.scale_;
+        this.grid_points = [];
+        this.resize_points = [];
+        this.keep_aspect_ratio_ = json.keep_aspect_ratio_;
+        this.aspect_ratio_line_ = json.aspect_ratio_line_;
+        this.grid_color_ = json.grid_color_;
+        this.grayscale_ = json.grayscale_;
+        this.virtual_width = json.virtual_width;
+        this.virtual_height = json.virtual_height;
 
+        json.grid_points.forEach((point) => {
+            let grid_point = this.constructGridPoint(point.x, point.y);
+            grid_point.horizontal = point.horizontal;
+            grid_point.vertical = point.vertical;
+            // TODO: Make it uniform with constructResizePoint()
+            this.handles_container.appendChild(grid_point);
+            this.grid_points.push(grid_point);
+        });
+        json.resize_points.forEach((point, i) => {
+            let resize_point = this.constructResizePoint(point.x, point.y, i),
+                local_x = this.image_width * (point.x / 100) + this.image_x,
+                local_y = this.image_height * (point.y / 100) + this.image_y;
+
+            // Visual position of the interactive handle
+            resize_point.style.top = local_y - HANDLE_CENTER + "px";
+            resize_point.style.left = local_x - HANDLE_CENTER + "px";
+            resize_point.style.visibility = "hidden";
+        });
+
+        this.redraw();
     }
 }
 
