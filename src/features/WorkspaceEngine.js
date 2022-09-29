@@ -334,10 +334,6 @@ class WorkspaceEngine {
         point.style.top = local_y - HANDLE_CENTER + "px";
         point.style.left = local_x - HANDLE_CENTER + "px";
 
-        // Insert the newly created point and its handle
-        this.handles_container.appendChild(point);
-        this.grid_points.push(point);
-
         this.updateDistanceLabels();
         this.redraw();
     }
@@ -391,6 +387,8 @@ class WorkspaceEngine {
             }
         });
 
+        this.handles_container.appendChild(point);
+        this.grid_points.push(point);
         return point;
     }
 
@@ -402,19 +400,14 @@ class WorkspaceEngine {
             horizontal_part = 100 / n,
             vertical_part = 100 / m;
 
-        for (let i = 1; i < u; i++) {
-            let point = this.constructGridPoint(i * horizontal_part, i * vertical_part);
-            this.handles_container.appendChild(point);
-            this.grid_points.push(point);
-        }
+        for (let i = 1; i < u; i++)
+            this.constructGridPoint(i * horizontal_part, i * vertical_part);
 
         for (let i = u; i < v; i++) {
             let point =
                 n > m ? this.constructGridPoint(i * horizontal_part, 100) : this.constructGridPoint(100, i * vertical_part);
             point.horizontal = m > n;
             point.vertical = n > m;
-            this.handles_container.appendChild(point);
-            this.grid_points.push(point);
         }
 
         this.updateHandles();
@@ -617,28 +610,36 @@ class WorkspaceEngine {
 
         let fileReader = new FileReader();
         fileReader.onload = () => {
-            this.image.onload = () => {
-                this.clearGridPoints();
-                this.resetResizeHandles();
-                this.source_width = this.image.width;
-                this.source_height = this.image.height;
-                this.updateImageDimensions();
-                this.redraw();
-            };
+            this.image.addEventListener(
+                "load",
+                () => {
+                    this.clearGridPoints();
+                    this.resetResizeHandles();
+                    this.source_width = this.image.width;
+                    this.source_height = this.image.height;
+                    this.updateImageDimensions();
+                    this.redraw();
+                },
+                { once: true }
+            );
             this.image.src = fileReader.result;
         };
         fileReader.readAsDataURL(file);
     }
 
     loadImageURL(url) {
-        this.image.onload = () => {
-            this.clearGridPoints();
-            this.resetResizeHandles();
-            this.source_width = this.image.width;
-            this.source_height = this.image.height;
-            this.updateImageDimensions();
-            this.redraw();
-        };
+        this.image.addEventListener(
+            "load",
+            () => {
+                this.clearGridPoints();
+                this.resetResizeHandles();
+                this.source_width = this.image.width;
+                this.source_height = this.image.height;
+                this.updateImageDimensions();
+                this.redraw();
+            },
+            { once: true }
+        );
         this.image.src = url;
     }
 
@@ -683,6 +684,15 @@ class WorkspaceEngine {
     }
 
     importFromJSON(json) {
+        this.image.addEventListener(
+            "load",
+            () => {
+                this.updateImageDimensions();
+                this.updateHandles();
+                this.redraw();
+            },
+            { once: true }
+        );
         this.image.src = json.imageURI;
         this.mode = json.mode;
         this.source_x = json.source_x;
@@ -707,22 +717,12 @@ class WorkspaceEngine {
             let grid_point = this.constructGridPoint(point.x, point.y);
             grid_point.horizontal = point.horizontal;
             grid_point.vertical = point.vertical;
-            // TODO: Make it uniform with constructResizePoint()
-            this.handles_container.appendChild(grid_point);
-            this.grid_points.push(grid_point);
+            grid_point.style.visibility = "hidden";
         });
         json.resize_points.forEach((point, i) => {
-            let resize_point = this.constructResizePoint(point.x, point.y, i),
-                local_x = this.image_width * (point.x / 100) + this.image_x,
-                local_y = this.image_height * (point.y / 100) + this.image_y;
-
-            // Visual position of the interactive handle
-            resize_point.style.top = local_y - HANDLE_CENTER + "px";
-            resize_point.style.left = local_x - HANDLE_CENTER + "px";
+            let resize_point = this.constructResizePoint(point.x, point.y, i);
             resize_point.style.visibility = "hidden";
         });
-
-        this.redraw();
     }
 }
 
