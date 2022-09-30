@@ -38,7 +38,6 @@ export default function App() {
     useEffect(() => {
         document.documentElement.addEventListener("fullscreenchange", () => {
             setFullscreenMode(!!document.fullscreenElement);
-            // TODO: Load previous state of workspace
         });
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -81,10 +80,8 @@ export default function App() {
                             onClick={() => {
                                 if (document.fullscreenElement)
                                     document.exitFullscreen();
-                                else {
-                                    // TODO: Save current state of workspace
+                                else
                                     document.documentElement.requestFullscreen();
-                                }
                             }}
                         >
                             <FullscreenIcon />
@@ -132,27 +129,22 @@ export default function App() {
                             <LeftDrawerItem text="Reset" icon={<RestartAltRoundedIcon />} />
                         </List>
                     </LeftDrawer>
-
-                    <Box component="main" sx={{ display: "flex", flexDirection: "column", flexGrow: 1, p: 2, height: "100vh" }}>
-                        <LeftDrawerHeader />
-                        <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                            <Grid item xs={9}>
-                                <Workspace onScroll={handleWorkspaceScroll} />
-                            </Grid>
-                            <Grid item xs={3}>
-                                {appMode.widgets}
-                            </Grid>
-                        </Grid>
-                    </Box>
                 </>
             )}
-            {fullscreenMode && (
-                <Grid container sx={{ flexGrow: 1, height: "100vh" }}>
-                    <Grid item xs={12}>
+
+            <Box component="main" sx={{ display: "flex", flexDirection: "column", flexGrow: 1, p: fullscreenMode ? 0 : 2, height: "100vh" }}>
+                {!fullscreenMode && <LeftDrawerHeader />}
+                <Grid container spacing={fullscreenMode ? 0 : 2} sx={{ flexGrow: 1 }}>
+                    <Grid item xs={fullscreenMode ? 12 : 9}>
                         <Workspace onScroll={handleWorkspaceScroll} />
                     </Grid>
+                    {!fullscreenMode && (
+                        <Grid item xs={3}>
+                            {appMode.widgets}
+                        </Grid>
+                    )}
                 </Grid>
-            )}
+            </Box>
         </Box>
     );
 }
