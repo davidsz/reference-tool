@@ -1,10 +1,11 @@
 import "./Workspace.css";
-import { WorkspaceContext } from "..";
+import { LocalStorageContext, WorkspaceContext } from "..";
 import { useContext, useEffect, useRef } from "react";
 import { Paper } from "@mui/material";
 import useResizeObserver from "@react-hook/resize-observer";
 
 function Workspace({ onScroll }) {
+    const localStorageManager = useContext(LocalStorageContext);
     const workspaceEngine = useContext(WorkspaceContext);
 
     const workspaceOuterRef = useRef(null);
@@ -26,7 +27,11 @@ function Workspace({ onScroll }) {
         );
         let container = document.getElementById("workspace-outer");
         workspaceEngine.resize(container.offsetWidth, container.offsetHeight);
-        workspaceEngine.loadImageURL("image/splash.png");
+        let current_session = localStorageManager.get(localStorageManager.CURRENT)?.value;
+        if (current_session)
+            workspaceEngine.importFromJSON(current_session);
+        else
+            workspaceEngine.loadImageURL("image/splash.png");
 
         container.addEventListener("wheel", (e) => {
             e.preventDefault();

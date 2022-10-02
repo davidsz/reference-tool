@@ -1,4 +1,4 @@
-import { WorkspaceContext } from ".";
+import { LocalStorageContext, WorkspaceContext } from ".";
 import { useContext, useState, useEffect } from "react";
 import { app_mode } from "./app_mode";
 import {
@@ -33,11 +33,16 @@ export default function App() {
     const [zoomValue, setZoomValue] = useState(100);
     const [fullscreenMode, setFullscreenMode] = useState(false);
 
+    const localStorageManager = useContext(LocalStorageContext);
     const workspaceEngine = useContext(WorkspaceContext);
 
     useEffect(() => {
         document.documentElement.addEventListener("fullscreenchange", () => {
             setFullscreenMode(!!document.fullscreenElement);
+        });
+        window.addEventListener("beforeunload", (e) => {
+            e.preventDefault();
+            localStorageManager.set(localStorageManager.CURRENT, workspaceEngine.exportAsJSON());
         });
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
