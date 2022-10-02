@@ -38,7 +38,12 @@ export default function App() {
 
     useEffect(() => {
         document.documentElement.addEventListener("fullscreenchange", () => {
+            // The canvas programmatically adapts itself to its parent's size. Workaround growing-only
+            // canvas issue by removing it temporarily from the layout and letting the other elements
+            // take place as they please before inserting drawing area again.
+            workspaceEngine.canvas.style.display = "none";
             setFullscreenMode(!!document.fullscreenElement);
+            workspaceEngine.canvas.style.display = "block";
         });
         window.addEventListener("beforeunload", (e) => {
             e.preventDefault();
