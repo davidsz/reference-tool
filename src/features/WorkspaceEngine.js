@@ -601,6 +601,13 @@ class WorkspaceEngine {
         this.redraw();
     }
 
+    setVirtualSizes(width, height) {
+        this.virtual_width = width;
+        this.virtual_height = height;
+        this.updateDistanceLabels();
+        this.redraw();
+    }
+
     loadLocalImage(file) {
         if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
             window.alert("File API is not supported.");
@@ -616,6 +623,8 @@ class WorkspaceEngine {
                     this.resetResizeHandles();
                     this.source_width = this.image.width;
                     this.source_height = this.image.height;
+                    let ar = getAspectRatio(this.image.width, this.image.height);
+                    this.setVirtualSizes(ar.width, ar.height);
                     this.updateImageDimensions();
                     this.redraw();
                 },
@@ -634,6 +643,8 @@ class WorkspaceEngine {
                 this.resetResizeHandles();
                 this.source_width = this.image.width;
                 this.source_height = this.image.height;
+                let ar = getAspectRatio(this.image.width, this.image.height);
+                this.setVirtualSizes(ar.width, ar.height);
                 this.updateImageDimensions();
                 this.redraw();
             },
