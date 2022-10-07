@@ -64,7 +64,11 @@ function ResizeWidgets() {
             )}
             <RightSideWidget
                 description="Size corrections are not permanent. Here you can restore the image to its original size."
-                action={{ name: "Restore", callback: () => workspaceEngine.resetCrop() }}
+                action={{ name: "Restore", callback: () => {
+                    setAspectWidth(1);
+                    setAspectHeight(1);
+                    workspaceEngine.resetCrop();
+                } }}
             ></RightSideWidget>
         </>
     );

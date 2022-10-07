@@ -400,8 +400,7 @@ class WorkspaceEngine {
             horizontal_part = 100 / n,
             vertical_part = 100 / m;
 
-        for (let i = 1; i < u; i++)
-            this.constructGridPoint(i * horizontal_part, i * vertical_part);
+        for (let i = 1; i < u; i++) this.constructGridPoint(i * horizontal_part, i * vertical_part);
 
         for (let i = u; i < v; i++) {
             let point =
@@ -524,6 +523,17 @@ class WorkspaceEngine {
         for (let i = 0; i < 2; i++) this.resize_points[i].style.visibility = css_visibility;
     }
 
+    getResizeHandles() {
+        // Top/left first, then the other.
+        let point_a = this.resize_points[0],
+            point_b = this.resize_points[1],
+            top_left_index = point_a.x <= point_b.x ? 0 : 1;
+        return {
+            a: this.resize_points[top_left_index],
+            b: this.resize_points[top_left_index === 0 ? 1 : 0],
+        };
+    }
+
     resetResizeHandles() {
         if (!this.resize_points.length) return;
 
@@ -536,21 +546,13 @@ class WorkspaceEngine {
     }
 
     cropImage() {
-        // Determine top left point of the rectangle
-        let point_a = this.resize_points[0],
-            point_b = this.resize_points[1];
-        let top_left_index = 0;
-        if (point_a.x < point_b.x) top_left_index = 0;
-        else if (point_a.x > point_b.x) top_left_index = 1;
-        else return;
-        point_a = this.resize_points[top_left_index];
-        point_b = this.resize_points[top_left_index === 0 ? 1 : 0];
+        let point = this.getResizeHandles();
 
         // Store crop coordinates and keep the image object untouched
-        this.source_x = this.source_width * (point_a.x / 100) + this.source_x;
-        this.source_y = this.source_height * (point_a.y / 100) + this.source_y;
-        this.source_width = this.source_width * ((point_b.x - point_a.x) / 100);
-        this.source_height = this.source_height * ((point_b.y - point_a.y) / 100);
+        this.source_x = this.source_width * (point.a.x / 100) + this.source_x;
+        this.source_y = this.source_height * (point.a.y / 100) + this.source_y;
+        this.source_width = this.source_width * ((point.b.x - point.a.x) / 100);
+        this.source_height = this.source_height * ((point.b.y - point.a.y) / 100);
 
         this.updateImageDimensions();
         this.resetResizeHandles();
@@ -571,33 +573,30 @@ class WorkspaceEngine {
     }
 
     getResizeAspectRatio() {
-        // TODO: Refactor
-
-        // Determine top left point of the rectangle
-        let point_a = this.resize_points[0],
-            point_b = this.resize_points[1];
-        let top_left_index = 0;
-        if (point_a.x < point_b.x) top_left_index = 0;
-        else if (point_a.x > point_b.x) top_left_index = 1;
-        else return;
-        point_a = this.resize_points[top_left_index];
-        point_b = this.resize_points[top_left_index === 0 ? 1 : 0];
-
-        let resize_width = point_b.x - point_a.x;
-        let resize_height = point_b.y - point_a.y;
+        let point = this.getResizeHandles();
+        let resize_width = point.b.x - point.a.x;
+        let resize_height = point.b.y - point.a.y;
         let ar = getAspectRatio(resize_width, resize_height);
         return ar;
     }
 
     setResizeAspectRatio(width, height) {
-        let point_a = this.resize_points[0],
-            point_b = this.resize_points[1],
-            top_left_index = point_a.x <= point_b.x ? 0 : 1;
-        point_a = this.resize_points[top_left_index];
-        point_b = this.resize_points[top_left_index === 0 ? 1 : 0];
+        if (width > height) {
+            height *= 100 / width;
+            width = 100;
+        } else if (height > width) {
+            width *= 100 / height;
+            height = 100;
+        } else {
+            width = 100;
+            height = 100;
+        }
 
-        point_b.x = point_a.x + width;
-        point_b.y = point_a.y + height;
+        let point = this.getResizeHandles();
+        point.a.x = (100 - width) / 2;
+        point.a.y = (100 - height) / 2;
+        point.b.x = point.a.x + width;
+        point.b.y = point.a.y + height;
         this.updateHandles();
         this.redraw();
     }
