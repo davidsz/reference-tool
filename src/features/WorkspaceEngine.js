@@ -77,6 +77,7 @@ class WorkspaceEngine {
         this.distance_labels_y = [];
     }
 
+    // Updates drawing coordinates from viewport size, zooming scale and crop coordinates.
     updateImageDimensions() {
         let canvas_width = this.canvas.width,
             canvas_height = this.canvas.height,
@@ -198,7 +199,9 @@ class WorkspaceEngine {
         canvas_element.oncontextmenu = (e) => e.preventDefault();
 
         if ("wakeLock" in navigator) {
-            this.wakeLockSentinel = navigator.wakeLock.request("screen");
+            try {
+                this.wakeLockSentinel = navigator.wakeLock.request("screen");
+            } catch (e) {}
             document.addEventListener("visibilitychange", async () => {
                 if (this.wakeLockSentinel !== null && document.visibilityState === "visible")
                     this.wakeLockSentinel = await navigator.wakeLock.request("screen");
@@ -625,6 +628,7 @@ class WorkspaceEngine {
                     this.source_height = this.image.height;
                     let ar = getAspectRatio(this.image.width, this.image.height);
                     this.setVirtualSizes(ar.width, ar.height);
+                    this.grayscale_ = false;
                     this.updateImageDimensions();
                     this.redraw();
                 },
@@ -645,6 +649,7 @@ class WorkspaceEngine {
                 this.source_height = this.image.height;
                 let ar = getAspectRatio(this.image.width, this.image.height);
                 this.setVirtualSizes(ar.width, ar.height);
+                this.grayscale_ = false;
                 this.updateImageDimensions();
                 this.redraw();
             },
@@ -665,7 +670,6 @@ class WorkspaceEngine {
             image_y: this.image_y,
             image_width: this.image_width,
             image_height: this.image_height,
-            scale_: this.scale_,
             grid_points: [],
             resize_points: [],
             keep_aspect_ratio_: this.keep_aspect_ratio_,
@@ -713,7 +717,7 @@ class WorkspaceEngine {
         this.image_y = json.image_y;
         this.image_width = json.image_width;
         this.image_height = json.image_height;
-        this.scale_ = json.scale_;
+        this.scale_ = 1;
         this.grid_points = [];
         this.resize_points = [];
         this.keep_aspect_ratio_ = json.keep_aspect_ratio_;

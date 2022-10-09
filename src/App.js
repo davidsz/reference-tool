@@ -41,6 +41,8 @@ export default function App() {
             e.preventDefault();
             localStorageManager.set(localStorageManager.CURRENT, workspaceEngine.exportAsJSON());
         });
+
+        workspaceEngine.setMode(appMode.workspaceMode);
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const changeAppMode = (mode) => {
@@ -158,6 +160,7 @@ export default function App() {
             <ConfirmDialog
                 open={resetDialogOpen}
                 onAccept={() => {
+                    workspaceEngine.resetCrop();
                     workspaceEngine.loadImageURL("image/splash.png");
                 }}
                 onReject={() => {}}
