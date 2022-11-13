@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/reference-tool/static/css/main.5d26b5fa.css",
+    "main.js": "/reference-tool/static/js/main.23a47ba8.js",
+    "index.html": "/reference-tool/index.html",
+    "main.5d26b5fa.css.map": "/reference-tool/static/css/main.5d26b5fa.css.map",
+    "main.23a47ba8.js.map": "/reference-tool/static/js/main.23a47ba8.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.5d26b5fa.css",
+    "static/js/main.23a47ba8.js"
+  ]
+}
