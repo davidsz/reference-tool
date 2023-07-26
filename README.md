@@ -13,14 +13,14 @@ Have you ever pressed your ruler to your monitor to get accurate proportions of 
 - Importing images from the web or from the local computer
 - Resize image to a desired aspect ratio
 - Generate grid automatically or add helper lines manually
--- **Left click** in grid creation mode: add reference point with horizontal and vertical lines
--- **Right click** on the point: change between horizontal line, vertical line or grid point
--- **Long right click** on the point: remove
--- **Left click drag & drop**: move points
+  - **Left click** in grid creation mode: add reference point with horizontal and vertical lines
+  - **Right click** on the point: change between horizontal line, vertical line or grid point
+  - **Long right click** on the point: remove
+  - **Left click drag & drop**: move points
 - Show image size proportions among the grid points
--- Using an unnamed measurement unit as virtual size, you can consider sizes as centimeters, millimeters or anything else
+  - Using an unnamed measurement unit as virtual size, you can consider sizes as centimeters, millimeters or anything else
 - Quick color filters (*under development*)
--- Black and white mode to check contrasts of a colored image
+  - Black and white mode to check contrasts of a colored image
 - Saving and loading your workflow
--- Automatical quick save to the storage memory of your browser
--- Manual save to a file
+  - Automatical quick save to the storage memory of your browser
+  - Manual save to a file
