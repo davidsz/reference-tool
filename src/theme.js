@@ -1,5 +1,7 @@
 import { createTheme } from "@mui/material";
 
+export const SPLASH_IMAGE_URL = process.env.PUBLIC_URL + "/image/splash.png";
+
 export const theme = createTheme({
     _drawerWidth: 240,
     palette: {

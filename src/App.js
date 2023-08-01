@@ -17,6 +17,7 @@ import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import Workspace from "./components/Workspace";
 import ConfirmDialog from "./components/ConfirmDialog";
+import { SPLASH_IMAGE_URL } from "./theme";
 
 export default function App() {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -160,8 +161,9 @@ export default function App() {
             <ConfirmDialog
                 open={resetDialogOpen}
                 onAccept={() => {
+                    localStorageManager.remove(localStorageManager.CURRENT);
                     workspaceEngine.resetCrop();
-                    workspaceEngine.loadImageURL("image/splash.png");
+                    workspaceEngine.loadImageURL(SPLASH_IMAGE_URL);
                 }}
                 onReject={() => {}}
                 onClose={() => setResetDialogOpen(false)}

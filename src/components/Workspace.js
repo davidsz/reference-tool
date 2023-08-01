@@ -3,6 +3,7 @@ import { LocalStorageContext, WorkspaceContext } from "..";
 import { useContext, useEffect, useRef } from "react";
 import { Paper } from "@mui/material";
 import useResizeObserver from "@react-hook/resize-observer";
+import { SPLASH_IMAGE_URL } from "../theme";
 
 function Workspace({ onScroll }) {
     const localStorageManager = useContext(LocalStorageContext);
@@ -11,7 +12,7 @@ function Workspace({ onScroll }) {
     const workspaceOuterRef = useRef(null);
     useResizeObserver(workspaceOuterRef, (entry) => {
         workspaceEngine.resize(parseInt(entry.contentRect.width), parseInt(entry.contentRect.height));
-        workspaceEngine.redraw();
+        workspaceEngine.redrawSafe();
     });
 
     const addGridPoint = (e) => {
@@ -28,10 +29,10 @@ function Workspace({ onScroll }) {
         let container = document.getElementById("workspace-outer");
         workspaceEngine.resize(container.offsetWidth, container.offsetHeight);
         let current_session = localStorageManager.get(localStorageManager.CURRENT)?.value;
-        if (current_session)
+        if (current_session && current_session.imageURI.length > 15)
             workspaceEngine.importFromJSON(current_session);
         else
-            workspaceEngine.loadImageURL("image/splash.png");
+            workspaceEngine.loadImageURL(SPLASH_IMAGE_URL);
 
         container.addEventListener("wheel", (e) => {
             e.preventDefault();

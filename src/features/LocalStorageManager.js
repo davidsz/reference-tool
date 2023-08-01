@@ -19,6 +19,10 @@ class LocalStorageManager {
     get(key) {
         return JSON.parse(localStorage.getItem(key));
     }
+
+    remove(key) {
+        localStorage.removeItem(key);
+    }
 }
 
 const singletonLocalStorageManager = new LocalStorageManager();

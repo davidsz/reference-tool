@@ -216,6 +216,12 @@ class WorkspaceEngine {
         this.updateHandles();
     }
 
+    // May be called before any image has been loaded
+    redrawSafe() {
+        if (this.image.complete)
+            this.redraw();
+    }
+
     redraw() {
         let canvas_width = this.canvas.width,
             canvas_height = this.canvas.height,
@@ -320,7 +326,7 @@ class WorkspaceEngine {
             default:
                 break;
         }
-        this.redraw();
+        this.redrawSafe();
     }
 
     addGridPoint(local_x, local_y) {
