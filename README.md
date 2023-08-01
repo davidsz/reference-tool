@@ -8,7 +8,7 @@ Have you ever pressed your ruler to your monitor to get accurate proportions of 
 
 [Try it in your browser](https://davidsz.github.io/reference-tool)
 
-**Ferenc** is a web based reference tool for artists who seeks a ways to transfer digital images from their display to traditional media, such as paper or canvas. Based on my own needs, I created this lightweight application with the following functions:
+**Ferenc** is a web based reference tool for artists who seek a ways to transfer digital images from their display to traditional media, such as paper or canvas. Based on my own needs, I created this lightweight application with the following functions:
 
 - Importing images from the web or from the local computer
 - Resize image to a desired aspect ratio
@@ -24,3 +24,4 @@ Have you ever pressed your ruler to your monitor to get accurate proportions of 
 - Saving and loading your workflow
   - Automatical quick save to the storage memory of your browser
   - Manual save to a file
+- Distraction free mode
