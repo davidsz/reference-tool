@@ -10,9 +10,9 @@ function SaveSessionWidgets() {
         <RightSideWidget
             name="Save session"
             description="Save your current session to a .json file."
-            action={{ name: "Save", callback: () => {
+            action={{ name: "Save", callback: async () => {
                 let json = workspaceEngine.exportAsJSON();
-                saveJSONFile("ferenc_session.json", JSON.stringify(json));
+                await saveJSONFile("ferenc_session.json", JSON.stringify(json));
             } }}></RightSideWidget>
     );
 }
