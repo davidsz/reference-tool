@@ -45,6 +45,7 @@ function GridWidgets() {
                 description="You can provide an image size without specifying the unit. These numbers will be used to calculate distances between grid points."
                 action={{ name: "Refresh", callback: () => {
                     workspaceEngine.setVirtualSizes(virtualWidth, virtualHeight);
+                    workspaceEngine.redraw();
                 } }}>
                 <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
                     <TextField

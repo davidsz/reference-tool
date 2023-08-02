@@ -427,6 +427,7 @@ class WorkspaceEngine {
         while (this.grid_points.length > 0) this.grid_points.pop().remove();
     }
 
+    // Update grid/resize handles visually after a logical change
     updateHandles() {
         [...this.grid_points, ...this.resize_points].forEach((point) => {
             let local_x = this.image_width * (point.x / 100) + this.image_x;
@@ -614,7 +615,6 @@ class WorkspaceEngine {
         this.virtual_width = width;
         this.virtual_height = height;
         this.updateDistanceLabels();
-        this.redraw();
     }
 
     loadLocalImage(file) {
@@ -629,13 +629,14 @@ class WorkspaceEngine {
                 "load",
                 () => {
                     this.clearGridPoints();
-                    this.resetResizeHandles();
                     this.source_width = this.image.width;
                     this.source_height = this.image.height;
                     let ar = getAspectRatio(this.image.width, this.image.height);
                     this.setVirtualSizes(ar.width, ar.height);
                     this.grayscale_ = false;
                     this.updateImageDimensions();
+                    this.resetResizeHandles();
+                    this.updateHandles();
                     this.redraw();
                 },
                 { once: true }
@@ -650,13 +651,14 @@ class WorkspaceEngine {
             "load",
             () => {
                 this.clearGridPoints();
-                this.resetResizeHandles();
                 this.source_width = this.image.width;
                 this.source_height = this.image.height;
                 let ar = getAspectRatio(this.image.width, this.image.height);
                 this.setVirtualSizes(ar.width, ar.height);
                 this.grayscale_ = false;
                 this.updateImageDimensions();
+                this.resetResizeHandles();
+                this.updateHandles();
                 this.redraw();
             },
             { once: true }
