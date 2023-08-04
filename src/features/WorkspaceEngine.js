@@ -591,14 +591,16 @@ class WorkspaceEngine {
     }
 
     setResizeAspectRatio(width, height) {
-        if (width > height) {
-            height *= 100 / width;
+        // Convert AR to logical sizes
+        if (this.image.width / width < this.image.height / height) {
+            // Fit resize box to the horizontal side of the image
+            let desired_px_height = this.image.width / width * height;
+            height = desired_px_height / this.image_height * 100;
             width = 100;
-        } else if (height > width) {
-            width *= 100 / height;
-            height = 100;
         } else {
-            width = 100;
+            // Fit resize box to the vertical side of the image
+            let desired_px_width = this.image.height / height * width;
+            width = desired_px_width / this.image.width * 100;
             height = 100;
         }
 
