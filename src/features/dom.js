@@ -32,7 +32,7 @@ export function makeElementDraggable(element, positionUpdatedCallback, button_id
         element.style.left = left + "px";
 
         if (positionUpdatedCallback)
-            positionUpdatedCallback(left, top);
+            positionUpdatedCallback(left, top, e.clientX, e.clientY);
     }
 
     function dragMouseUp() {

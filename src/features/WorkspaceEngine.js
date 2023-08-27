@@ -1,4 +1,4 @@
-import { getAspectRatio, toFixedNumber } from "./math";
+import { getAspectRatio, scaleWithAspectRatio, toFixedNumber } from "./math";
 import { grayscaleEffect } from "./color_filters";
 import { makeElementDraggable, attachRightClickHandler, attachLongRightClickHandler } from "./dom";
 import { imageToDataURL } from "./helper";
@@ -56,8 +56,9 @@ class WorkspaceEngine {
 
         // Keep ratio of resize rectangle when interacting with resize handles
         this.keep_aspect_ratio_ = false;
-        // Lock resize points and move along this line when keeping aspect ratio
-        this.aspect_ratio_line_ = { a: [0, 0], b: [0, 0] };
+        // TODO: Consider keeping the AR values fixed as a member
+        // Aspect ratio of the resize box
+        // this.resize_aspect_ratio = { x: 0, y: 0 };
 
         // DOM container of grid and resize handler points
         this.handles_container = null;
@@ -98,19 +99,6 @@ class WorkspaceEngine {
         this.image_height = image_height;
 
         this.updateDistanceLabels();
-    }
-
-    get keep_aspect_ratio() {
-        return this.keep_aspect_ratio_;
-    }
-
-    set keep_aspect_ratio(val) {
-        this.keep_aspect_ratio_ = val;
-        if (!this.resize_points.length) return;
-        this.aspect_ratio_line_ = {
-            a: [this.resize_points[0].x, this.resize_points[0].y],
-            b: [this.resize_points[1].x, this.resize_points[1].y],
-        };
     }
 
     get scale() {
@@ -451,30 +439,37 @@ class WorkspaceEngine {
         point.y = y;
 
         // Resize selection rectangle when moving the handle
-        makeElementDraggable(point, (global_x, global_y) => {
+        makeElementDraggable(point, (global_x, global_y, mouse_global_x, mouse_global_y) => {
             let x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5),
                 y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
 
-            if (this.keep_aspect_ratio) {
-                // Determine a unit vector to move with
-                let x_direction = this.aspect_ratio_line_.b[0] - this.aspect_ratio_line_.a[0];
-                let y_direction = this.aspect_ratio_line_.b[1] - this.aspect_ratio_line_.a[1];
-                let magnitude = Math.sqrt(x_direction * x_direction + y_direction * y_direction);
-                let x_unit = x_direction / magnitude;
-                let y_unit = y_direction / magnitude;
+            if (this.keep_aspect_ratio_) {
+                // Determine the original selection rectangle to resize
+                let other_point = this.resize_points[n === 0 ? 1 : 0];
+                let original_width = Math.abs(point.x - other_point.x),
+                    original_height = Math.abs(point.y - other_point.y);
 
-                // Move always with the same unit to avoid problems from too short mouse events
-                let diff = -0.4;
-                // TODO: Find a smoother solution to determine direction
-                if (x - point.x >= 0) diff *= -1;
+                // Get minimum sides from the mouse coordinates
+                let bc = this.canvas.getBoundingClientRect();
+                let mouse_x = toFixedNumber(((mouse_global_x - bc.left + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5),
+                    mouse_y = toFixedNumber(((mouse_global_y - bc.top + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
+                let target_width = mouse_x - other_point.x,
+                    target_height = mouse_y - other_point.y;
 
-                x = point.x + x_unit * diff;
-                y = point.y + y_unit * diff;
+                // Scale the original rectangle to contain the new one
+                let new_rect = scaleWithAspectRatio(original_width, original_height, target_width, target_height, false);
+                const min_rect_size = 0.5;
+                if (new_rect.width < min_rect_size || new_rect.height < min_rect_size)
+                    new_rect = scaleWithAspectRatio(original_width, original_height, min_rect_size, min_rect_size, false);
+
+                // Adjust point coordinates to the corner of the calculated rectangle
+                x = other_point.x + new_rect.width;
+                y = other_point.y + new_rect.height;
             }
 
             point.x = x;
             point.y = y;
-            if (this.keep_aspect_ratio) this.updateHandles();
+            if (this.keep_aspect_ratio_) this.updateHandles();
             this.redraw();
         });
 
@@ -683,7 +678,6 @@ class WorkspaceEngine {
             grid_points: [],
             resize_points: [],
             keep_aspect_ratio_: this.keep_aspect_ratio_,
-            aspect_ratio_line_: this.aspect_ratio_line_,
             grid_color_: this.grid_color_,
             grayscale_: this.grayscale_,
             virtual_width: this.virtual_width,
@@ -731,7 +725,6 @@ class WorkspaceEngine {
         this.grid_points = [];
         this.resize_points = [];
         this.keep_aspect_ratio_ = json.keep_aspect_ratio_;
-        this.aspect_ratio_line_ = json.aspect_ratio_line_;
         this.grid_color_ = json.grid_color_;
         this.grayscale_ = json.grayscale_;
         this.virtual_width = json.virtual_width;

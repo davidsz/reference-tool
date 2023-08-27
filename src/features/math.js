@@ -28,3 +28,12 @@ export function getAspectRatio(w, h) {
     }
     return { width: w, height: h };
 }
+
+export function scaleWithAspectRatio(width, height, target_width, target_height, fit_into) {
+    let new_width = target_height * width / height;
+    let new_height = target_width * height / width;
+    if (fit_into ^ (new_width >= target_width))
+        return { width: new_width || 1, height: target_height };
+    else
+        return { width: target_width, height: new_height || 1 };
+}

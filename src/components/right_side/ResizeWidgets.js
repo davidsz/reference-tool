@@ -9,7 +9,7 @@ function ResizeWidgets() {
     let ar = workspaceEngine.getResizeAspectRatio();
     const [aspectWidth, setAspectWidth] = useState(ar.width);
     const [aspectHeight, setAspectHeight] = useState(ar.height);
-    const [keepAspectRatio, setKeepAspectRatio] = useState(workspaceEngine.keep_aspect_ratio);
+    const [keepAspectRatio, setKeepAspectRatio] = useState(workspaceEngine.keep_aspect_ratio_);
 
     return (
         <>
@@ -23,7 +23,7 @@ function ResizeWidgets() {
                     <Switch
                         checked={keepAspectRatio}
                         onChange={(e) => {
-                            workspaceEngine.keep_aspect_ratio = e.target.checked;
+                            workspaceEngine.keep_aspect_ratio_ = e.target.checked;
                             setKeepAspectRatio(e.target.checked);
                         }}
                     />
