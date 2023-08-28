@@ -29,7 +29,7 @@ class WorkspaceEngine {
         this.mode = workspace_mode.CONST;
 
         // Don't let the computer sleep when working with this app
-        this.wakeLockSentinel = null;
+        this.wake_lock_sentinel = null;
 
         // Cached values for more effective rendering
         // Sources: cropped area from the original image
@@ -187,13 +187,14 @@ class WorkspaceEngine {
         canvas_element.oncontextmenu = (e) => e.preventDefault();
 
         if ("wakeLock" in navigator) {
-            try {
-                this.wakeLockSentinel = navigator.wakeLock.request("screen");
-            } catch (e) {}
-            document.addEventListener("visibilitychange", async () => {
-                if (this.wakeLockSentinel !== null && document.visibilityState === "visible")
-                    this.wakeLockSentinel = await navigator.wakeLock.request("screen");
-            });
+            const requestWakeLock = async () => {
+                try {
+                    if (document.visibilityState === "visible")
+                        this.wake_lock_sentinel = await navigator.wakeLock.request("screen");
+                } catch (e) {}
+            }
+            requestWakeLock();
+            document.addEventListener("visibilitychange", requestWakeLock);
         }
     }
 
