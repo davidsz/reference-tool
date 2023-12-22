@@ -50,9 +50,11 @@ class WorkspaceEngine {
         // with percentage representation of x/y coordinates, relative to the scaled image
         this.grid_points = [];
 
-        // Handles for resize mode
+        // UI for resize mode
         // Same as grid points, but just only two points
         this.resize_points = [];
+        // A rectangle to provide interactive dragging and visual border in resize mode
+        this.resize_div = null;
 
         // Keep ratio of resize rectangle when interacting with resize handles
         this.keep_aspect_ratio_ = false;
@@ -231,20 +233,7 @@ class WorkspaceEngine {
 
         if (this.grayscale_) grayscaleEffect(this.canvas, context);
 
-        if (this.mode === workspace_mode.RESIZE) {
-            // Rectangle for resize dimensions
-            let p1 = this.resize_points[0],
-                p2 = this.resize_points[1],
-                p1_x = this.image_width * (p1.x / 100) + this.image_x,
-                p1_y = this.image_height * (p1.y / 100) + this.image_y,
-                p2_x = this.image_width * (p2.x / 100) + this.image_x,
-                p2_y = this.image_height * (p2.y / 100) + this.image_y;
-            context.strokeStyle = this.grid_color_;
-            context.beginPath();
-            context.rect(p1_x, p1_y, p2_x - p1_x, p2_y - p1_y);
-            context.stroke();
-            return;
-        } else if (this.mode === workspace_mode.IMAGE) return;
+        if (this.mode === workspace_mode.IMAGE || this.mode === workspace_mode.RESIZE) return;
 
         // Lines on the top of the image
         context.strokeStyle = this.grid_color_;
@@ -329,8 +318,7 @@ class WorkspaceEngine {
         );
 
         // Visual position of the interactive handle
-        point.style.top = local_y - HANDLE_CENTER + "px";
-        point.style.left = local_x - HANDLE_CENTER + "px";
+        point.setLocalPosition(local_x, local_y);
 
         this.updateDistanceLabels();
         this.redraw();
@@ -348,6 +336,12 @@ class WorkspaceEngine {
         // Enable both horizontal and vertical lines initially
         point.horizontal = true;
         point.vertical = true;
+
+        // A function to update visual position
+        point.setLocalPosition = (local_x, local_y) => {
+            point.style.top = local_y - HANDLE_CENTER + "px";
+            point.style.left = local_x - HANDLE_CENTER + "px";
+        };
 
         // Update and redraw the corresponding point when moving the handle
         makeElementDraggable(point, (global_x, global_y) => {
@@ -416,14 +410,36 @@ class WorkspaceEngine {
         while (this.grid_points.length > 0) this.grid_points.pop().remove();
     }
 
+    logicalToLocalPos(x, y) {
+        return {
+            x: this.image_width * (x / 100) + this.image_x,
+            y: this.image_height * (y / 100) + this.image_y
+        };
+    }
+
     // Update grid/resize handles visually after a logical change
-    updateHandles() {
+    updateHandles(update_rect) {
+        if (update_rect === undefined)
+            update_rect = true;
         [...this.grid_points, ...this.resize_points].forEach((point) => {
-            let local_x = this.image_width * (point.x / 100) + this.image_x;
-            let local_y = this.image_height * (point.y / 100) + this.image_y;
-            point.style.top = local_y - HANDLE_CENTER + "px";
-            point.style.left = local_x - HANDLE_CENTER + "px";
+            let local = this.logicalToLocalPos(point.x, point.y);
+            point.setLocalPosition(local.x, local.y, update_rect);
         });
+    }
+
+    // Update resize rectangle to fit with the resize handles
+    updateResizeRectangle() {
+        let resize_point = this.getResizeHandles();
+
+        // Top left point
+        let top_left = this.logicalToLocalPos(resize_point.a.x, resize_point.a.y);
+        this.resize_div.style.top = top_left.y + "px";
+        this.resize_div.style.left = top_left.x + "px";
+
+        // Bottom right point
+        let bottom_right = this.logicalToLocalPos(resize_point.b.x, resize_point.b.y);
+        this.resize_div.style.width = bottom_right.x - top_left.x + "px";
+        this.resize_div.style.height = bottom_right.y - top_left.y + "px";
     }
 
     showGridHandles(show) {
@@ -438,6 +454,14 @@ class WorkspaceEngine {
 
         point.x = x;
         point.y = y;
+
+        // A function to update visual position
+        point.setLocalPosition = (local_x, local_y, update_rect) => {
+            point.style.top = local_y - HANDLE_CENTER + "px";
+            point.style.left = local_x - HANDLE_CENTER + "px";
+            if (update_rect)
+                this.updateResizeRectangle();
+        };
 
         // Resize selection rectangle when moving the handle
         makeElementDraggable(point, (global_x, global_y, mouse_global_x, mouse_global_y) => {
@@ -470,29 +494,9 @@ class WorkspaceEngine {
 
             point.x = x;
             point.y = y;
-            if (this.keep_aspect_ratio_) this.updateHandles();
+            this.updateHandles();
             this.redraw();
         });
-
-        // Move selection rectangle on right click dragging
-        makeElementDraggable(
-            point,
-            (global_x, global_y) => {
-                let other_point = this.resize_points[n === 0 ? 1 : 0];
-                let prev_x = point.x,
-                    prev_y = point.y;
-                point.x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5);
-                point.y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
-
-                other_point.x += point.x - prev_x;
-                other_point.y += point.y - prev_y;
-                other_point.style.top = this.image_height * (other_point.y / 100) + this.image_y - HANDLE_CENTER + "px";
-                other_point.style.left = this.image_width * (other_point.x / 100) + this.image_x - HANDLE_CENTER + "px";
-
-                this.redraw();
-            },
-            2
-        );
 
         // Insert the newly created point and its handle
         this.handles_container.appendChild(point);
@@ -500,11 +504,32 @@ class WorkspaceEngine {
         return point;
     }
 
+    constructResizeDiv() {
+        let div = document.createElement("div");
+        div.classList.add("resize-rect");
+
+        makeElementDraggable(div, (global_x, global_y) => {
+            let point = this.getResizeHandles();
+            let prev_x = point.a.x,
+                prev_y = point.a.y;
+            point.a.x = toFixedNumber(((global_x - this.image_x) / this.image_width) * 100, 5);
+            point.a.y = toFixedNumber(((global_y - this.image_y) / this.image_height) * 100, 5);
+            point.b.x += point.a.x - prev_x;
+            point.b.y += point.a.y - prev_y;
+            this.updateHandles(false);
+        });
+
+        this.handles_container.appendChild(div);
+        this.resize_div = div;
+        return div;
+    }
+
     showResizeHandles(show) {
         let css_visibility = show ? "visible" : "hidden";
 
-        // Initialize resize handles for the first time
+        // Initialize resize UI for the first time
         if (!this.resize_points.length) {
+            // Resize handle points
             for (let i = 0; i < 2; i++) {
                 let local_x = this.image_x,
                     local_y = this.image_y;
@@ -519,14 +544,18 @@ class WorkspaceEngine {
                 }
 
                 // Visual position of the interactive handle
-                point.style.top = local_y - HANDLE_CENTER + "px";
-                point.style.left = local_x - HANDLE_CENTER + "px";
+                point.setLocalPosition(local_x, local_y, false);
                 point.style.visibility = css_visibility;
             }
+            // Draggable rectangle
+            let div = this.constructResizeDiv();
+            div.style.visibility = css_visibility;
+            this.updateResizeRectangle();
             return;
         }
 
         for (let i = 0; i < 2; i++) this.resize_points[i].style.visibility = css_visibility;
+        this.resize_div.style.visibility = css_visibility;
     }
 
     getResizeHandles() {
@@ -725,6 +754,7 @@ class WorkspaceEngine {
         this.scale_ = 1;
         this.grid_points = [];
         this.resize_points = [];
+        this.resize_div = null;
         this.keep_aspect_ratio_ = json.keep_aspect_ratio_;
         this.grid_color_ = json.grid_color_;
         this.grayscale_ = json.grayscale_;
@@ -741,6 +771,8 @@ class WorkspaceEngine {
             let resize_point = this.constructResizePoint(point.x, point.y, i);
             resize_point.style.visibility = "hidden";
         });
+        let div = this.constructResizeDiv();
+        div.style.visibility = "hidden";
     }
 }
 

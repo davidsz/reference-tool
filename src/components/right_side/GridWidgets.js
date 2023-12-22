@@ -75,7 +75,6 @@ function GridWidgets() {
                     <Slider
                         defaultValue={50}
                         onChange={(e) => {
-                            console.log(e.target.value);
                             workspaceEngine.grid_color = "hsl(0, 0%, " + (100 - parseInt(e.target.value)) + "%)";
                         }}
                     />
