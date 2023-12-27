@@ -65,8 +65,9 @@ class WorkspaceEngine {
         // DOM container of grid and resize handler points
         this.handles_container = null;
 
-        // Grid line and handle color
+        // Grid line and handle color, and its L component
         this.grid_color_ = "hsl(0, 0%, 50%)";
+        this.grid_color_light_ = 50;
 
         // Grayscale filter
         this.grayscale_ = false;
@@ -114,15 +115,17 @@ class WorkspaceEngine {
         this.redraw();
     }
 
-    get grid_color() {
-        return this.grid_color_;
+    get grid_color_light() {
+        return this.grid_color_light_;
     }
 
-    set grid_color(val) {
-        this.grid_color_ = val;
+    set grid_color_light(val) {
+        this.grid_color_light_ = val;
+        this.grid_color_ = "hsl(0, 0%, " + val + "%)";
         [...this.grid_points, ...this.resize_points].forEach((point) => {
-            point.style.backgroundColor = val;
+            point.style.backgroundColor = this.grid_color_;
         });
+        this.resize_div.style.borderColor = this.grid_color_;
         this.redraw();
     }
 
@@ -709,6 +712,7 @@ class WorkspaceEngine {
             resize_points: [],
             keep_aspect_ratio_: this.keep_aspect_ratio_,
             grid_color_: this.grid_color_,
+            grid_color_light_: this.grid_color_light_,
             grayscale_: this.grayscale_,
             virtual_width: this.virtual_width,
             virtual_height: this.virtual_height,
@@ -757,6 +761,7 @@ class WorkspaceEngine {
         this.resize_div = null;
         this.keep_aspect_ratio_ = json.keep_aspect_ratio_;
         this.grid_color_ = json.grid_color_;
+        this.grid_color_light_ = json.grid_color_light_;
         this.grayscale_ = json.grayscale_;
         this.virtual_width = json.virtual_width;
         this.virtual_height = json.virtual_height;

@@ -10,6 +10,7 @@ function GridWidgets() {
     const [autoGridSize, setAutoGridSize] = useState([0, 0]);
     const [virtualWidth, setVirtualWidth] = useState(workspaceEngine.virtual_width);
     const [virtualHeight, setVirtualHeight] = useState(workspaceEngine.virtual_height);
+    const [colorLightValue, setColorLightValue] = useState(100 - workspaceEngine.grid_color_light);
 
     return (
         <>
@@ -73,9 +74,10 @@ function GridWidgets() {
                 <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
                     <ContrastIcon />
                     <Slider
-                        defaultValue={50}
+                        value={colorLightValue}
                         onChange={(e) => {
-                            workspaceEngine.grid_color = "hsl(0, 0%, " + (100 - parseInt(e.target.value)) + "%)";
+                            setColorLightValue(e.target.value);
+                            workspaceEngine.grid_color_light = 100 - parseInt(e.target.value);
                         }}
                     />
                 </Stack>
