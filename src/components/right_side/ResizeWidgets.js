@@ -6,25 +6,27 @@ import CloseIcon from "@mui/icons-material/Close";
 
 function ResizeWidgets() {
     const workspaceEngine = useContext(WorkspaceContext);
-    let ar = workspaceEngine.getResizeAspectRatio();
-    const [aspectWidth, setAspectWidth] = useState(ar.width);
-    const [aspectHeight, setAspectHeight] = useState(ar.height);
-    const [keepAspectRatio, setKeepAspectRatio] = useState(workspaceEngine.keep_aspect_ratio_);
+    const [keepAspectRatio, setKeepAspectRatio] = useState(workspaceEngine.keep_aspect_ratio);
+    const [aspectWidth, setAspectWidth] = useState(workspaceEngine.resize_aspect_ratio.x);
+    const [aspectHeight, setAspectHeight] = useState(workspaceEngine.resize_aspect_ratio.y);
 
     return (
         <>
             <RightSideWidget
                 name="Resize image"
                 description=""
-                action={{ name: "Resize to selection", callback: () => workspaceEngine.cropImage() }}
-            >
+                action={{ name: "Resize to selection", callback: () => workspaceEngine.cropImage() }}>
                 <Stack spacing={2} direction="row" alignItems="center">
                     <Typography>Free mode</Typography>
                     <Switch
                         checked={keepAspectRatio}
                         onChange={(e) => {
-                            workspaceEngine.keep_aspect_ratio_ = e.target.checked;
                             setKeepAspectRatio(e.target.checked);
+                            workspaceEngine.keep_aspect_ratio = e.target.checked;
+                            workspaceEngine.resize_aspect_ratio = {
+                                x: aspectWidth,
+                                y: aspectHeight,
+                            };
                         }}
                     />
                     <Typography>Keep aspect ratio</Typography>
@@ -33,8 +35,7 @@ function ResizeWidgets() {
             {keepAspectRatio && (
                 <RightSideWidget
                     name="Aspect ratio"
-                    description="You can specify the desired aspect ratio. The initial selection will cover as large area as possible."
-                >
+                    description="You can specify the desired aspect ratio. The initial selection will cover as large area as possible.">
                     <Stack spacing={2} direction="row" sx={{ mt: 3 }} alignItems="center">
                         <TextField
                             label="Width"
@@ -44,7 +45,10 @@ function ResizeWidgets() {
                             onChange={(e) => {
                                 let w = parseInt(!e.target.value || e.target.value === "0" ? 1 : e.target.value);
                                 setAspectWidth(w);
-                                workspaceEngine.setResizeAspectRatio(w, aspectHeight);
+                                workspaceEngine.resize_aspect_ratio = {
+                                    x: w,
+                                    y: aspectHeight,
+                                };
                             }}
                         />
                         <CloseIcon />
@@ -56,7 +60,10 @@ function ResizeWidgets() {
                             onChange={(e) => {
                                 let h = parseInt(!e.target.value || e.target.value === "0" ? 1 : e.target.value);
                                 setAspectHeight(h);
-                                workspaceEngine.setResizeAspectRatio(aspectWidth, h);
+                                workspaceEngine.resize_aspect_ratio = {
+                                    x: aspectWidth,
+                                    y: h,
+                                };
                             }}
                         />
                     </Stack>
@@ -64,12 +71,18 @@ function ResizeWidgets() {
             )}
             <RightSideWidget
                 description="Size corrections are not permanent. Here you can restore the image to its original size."
-                action={{ name: "Restore", callback: () => {
-                    setAspectWidth(1);
-                    setAspectHeight(1);
-                    workspaceEngine.resetCrop();
-                } }}
-            ></RightSideWidget>
+                action={{
+                    name: "Restore",
+                    callback: () => {
+                        setAspectWidth(1);
+                        setAspectHeight(1);
+                        workspaceEngine.resize_aspect_ratio = {
+                            x: 1,
+                            y: 1,
+                        };
+                        workspaceEngine.resetCrop();
+                    },
+                }}></RightSideWidget>
         </>
     );
 }

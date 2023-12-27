@@ -57,10 +57,9 @@ class WorkspaceEngine {
         this.resize_div = null;
 
         // Keep ratio of resize rectangle when interacting with resize handles
-        this.keep_aspect_ratio_ = false;
-        // TODO: Consider keeping the AR values fixed as a member
+        this.keep_aspect_ratio = false;
         // Aspect ratio of the resize box
-        // this.resize_aspect_ratio = { x: 0, y: 0 };
+        this.resize_aspect_ratio_ = { x: 1, y: 1 };
 
         // DOM container of grid and resize handler points
         this.handles_container = null;
@@ -135,6 +134,37 @@ class WorkspaceEngine {
 
     set grayscale(val) {
         this.grayscale_ = val;
+        this.redraw();
+    }
+
+    get resize_aspect_ratio() {
+        return this.resize_aspect_ratio_;
+    }
+
+    set resize_aspect_ratio(val) {
+        this.resize_aspect_ratio_ = val;
+
+        let width = val.x;
+        let height = val.y;
+        // Convert AR to logical sizes
+        if (this.image.width / width < this.image.height / height) {
+            // Fit resize box to the horizontal side of the image
+            let desired_px_height = this.image.width / width * height;
+            height = desired_px_height / this.image_height * 100;
+            width = 100;
+        } else {
+            // Fit resize box to the vertical side of the image
+            let desired_px_width = this.image.height / height * width;
+            width = desired_px_width / this.image.width * 100;
+            height = 100;
+        }
+        // Update resize handles and rectangle
+        let point = this.getResizeHandles();
+        point.a.x = (100 - width) / 2;
+        point.a.y = (100 - height) / 2;
+        point.b.x = point.a.x + width;
+        point.b.y = point.a.y + height;
+        this.updateHandles();
         this.redraw();
     }
 
@@ -471,7 +501,7 @@ class WorkspaceEngine {
             let x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5),
                 y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
 
-            if (this.keep_aspect_ratio_) {
+            if (this.keep_aspect_ratio) {
                 // Determine the original selection rectangle to resize
                 let other_point = this.resize_points[n === 0 ? 1 : 0];
                 let original_width = Math.abs(point.x - other_point.x),
@@ -610,37 +640,6 @@ class WorkspaceEngine {
         this.redraw();
     }
 
-    getResizeAspectRatio() {
-        let point = this.getResizeHandles();
-        let resize_width = point.b.x - point.a.x;
-        let resize_height = point.b.y - point.a.y;
-        let ar = getAspectRatio(resize_width, resize_height);
-        return ar;
-    }
-
-    setResizeAspectRatio(width, height) {
-        // Convert AR to logical sizes
-        if (this.image.width / width < this.image.height / height) {
-            // Fit resize box to the horizontal side of the image
-            let desired_px_height = this.image.width / width * height;
-            height = desired_px_height / this.image_height * 100;
-            width = 100;
-        } else {
-            // Fit resize box to the vertical side of the image
-            let desired_px_width = this.image.height / height * width;
-            width = desired_px_width / this.image.width * 100;
-            height = 100;
-        }
-
-        let point = this.getResizeHandles();
-        point.a.x = (100 - width) / 2;
-        point.a.y = (100 - height) / 2;
-        point.b.x = point.a.x + width;
-        point.b.y = point.a.y + height;
-        this.updateHandles();
-        this.redraw();
-    }
-
     setVirtualSizes(width, height) {
         this.virtual_width = width;
         this.virtual_height = height;
@@ -710,7 +709,8 @@ class WorkspaceEngine {
             image_height: this.image_height,
             grid_points: [],
             resize_points: [],
-            keep_aspect_ratio_: this.keep_aspect_ratio_,
+            keep_aspect_ratio: this.keep_aspect_ratio,
+            resize_aspect_ratio_: this.resize_aspect_ratio_,
             grid_color_: this.grid_color_,
             grid_color_light_: this.grid_color_light_,
             grayscale_: this.grayscale_,
@@ -759,7 +759,8 @@ class WorkspaceEngine {
         this.grid_points = [];
         this.resize_points = [];
         this.resize_div = null;
-        this.keep_aspect_ratio_ = json.keep_aspect_ratio_;
+        this.keep_aspect_ratio = json.keep_aspect_ratio;
+        this.resize_aspect_ratio_ = json.resize_aspect_ratio_;
         this.grid_color_ = json.grid_color_;
         this.grid_color_light_ = json.grid_color_light_;
         this.grayscale_ = json.grayscale_;
