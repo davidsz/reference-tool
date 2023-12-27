@@ -361,6 +361,7 @@ class WorkspaceEngine {
         // Interactive handle for the point
         let point = document.createElement("div");
         point.classList.add("grid-handle");
+        point.style.backgroundColor = this.grid_color_;
 
         // Position in percentage, relative to the image on canvas
         point.x = x;
@@ -484,6 +485,7 @@ class WorkspaceEngine {
         // Interactive handle for the point
         let point = document.createElement("div");
         point.classList.add("grid-handle");
+        point.style.backgroundColor = this.grid_color_;
 
         point.x = x;
         point.y = y;
@@ -540,6 +542,7 @@ class WorkspaceEngine {
     constructResizeDiv() {
         let div = document.createElement("div");
         div.classList.add("resize-rect");
+        div.style.borderColor = this.grid_color_;
 
         makeElementDraggable(div, (global_x, global_y) => {
             let point = this.getResizeHandles();
