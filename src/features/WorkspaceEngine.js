@@ -491,7 +491,7 @@ class WorkspaceEngine {
     constructResizePoint(x, y, n) {
         // Interactive handle for the point
         let point = document.createElement("div");
-        point.classList.add("grid-handle");
+        point.classList.add("resize-handle");
         point.style.backgroundColor = this.grid_color_;
 
         point.x = x;
