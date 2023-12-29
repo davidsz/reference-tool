@@ -149,13 +149,13 @@ class WorkspaceEngine {
         // Convert AR to logical sizes
         if (this.image.width / width < this.image.height / height) {
             // Fit resize box to the horizontal side of the image
-            let desired_px_height = this.image.width / width * height;
-            height = desired_px_height / this.image_height * 100;
+            let desired_px_height = (this.image.width / width) * height;
+            height = (desired_px_height / this.image_height) * 100;
             width = 100;
         } else {
             // Fit resize box to the vertical side of the image
-            let desired_px_width = this.image.height / height * width;
-            width = desired_px_width / this.image.width * 100;
+            let desired_px_width = (this.image.height / height) * width;
+            width = (desired_px_width / this.image.width) * 100;
             height = 100;
         }
         // Update resize handles and rectangle
@@ -227,7 +227,7 @@ class WorkspaceEngine {
                     if (document.visibilityState === "visible")
                         this.wake_lock_sentinel = await navigator.wakeLock.request("screen");
                 } catch (e) {}
-            }
+            };
             requestWakeLock();
             document.addEventListener("visibilitychange", requestWakeLock);
         }
@@ -242,8 +242,7 @@ class WorkspaceEngine {
 
     // May be called before any image has been loaded
     redrawSafe() {
-        if (this.image.complete)
-            this.redraw();
+        if (this.image.complete) this.redraw();
     }
 
     redraw() {
@@ -447,14 +446,13 @@ class WorkspaceEngine {
     logicalToLocalPos(x, y) {
         return {
             x: this.image_width * (x / 100) + this.image_x,
-            y: this.image_height * (y / 100) + this.image_y
+            y: this.image_height * (y / 100) + this.image_y,
         };
     }
 
     // Update grid/resize handles visually after a logical change
     updateHandles(update_rect) {
-        if (update_rect === undefined)
-            update_rect = true;
+        if (update_rect === undefined) update_rect = true;
         [...this.grid_points, ...this.resize_points].forEach((point) => {
             let local = this.logicalToLocalPos(point.x, point.y);
             point.setLocalPosition(local.x, local.y, update_rect);
@@ -463,15 +461,13 @@ class WorkspaceEngine {
 
     // Update resize rectangle to fit with the resize handles
     updateResizeRectangle() {
-        let resize_point = this.getResizeHandles();
+        let point = this.getResizeRectanglePoints();
 
-        // Top left point
-        let top_left = this.logicalToLocalPos(resize_point.a.x, resize_point.a.y);
+        let top_left = this.logicalToLocalPos(point.top_left.x, point.top_left.y);
         this.resize_div.style.top = top_left.y + "px";
         this.resize_div.style.left = top_left.x + "px";
 
-        // Bottom right point
-        let bottom_right = this.logicalToLocalPos(resize_point.b.x, resize_point.b.y);
+        let bottom_right = this.logicalToLocalPos(point.bottom_right.x, point.bottom_right.y);
         this.resize_div.style.width = bottom_right.x - top_left.x + "px";
         this.resize_div.style.height = bottom_right.y - top_left.y + "px";
     }
@@ -494,8 +490,7 @@ class WorkspaceEngine {
         point.setLocalPosition = (local_x, local_y, update_rect) => {
             point.style.top = local_y - HANDLE_CENTER + "px";
             point.style.left = local_x - HANDLE_CENTER + "px";
-            if (update_rect)
-                this.updateResizeRectangle();
+            if (update_rect) this.updateResizeRectangle();
         };
 
         // Resize selection rectangle when moving the handle
@@ -511,8 +506,14 @@ class WorkspaceEngine {
 
                 // Get minimum sides from the mouse coordinates
                 let bc = this.canvas.getBoundingClientRect();
-                let mouse_x = toFixedNumber(((mouse_global_x - bc.left + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5),
-                    mouse_y = toFixedNumber(((mouse_global_y - bc.top + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
+                let mouse_x = toFixedNumber(
+                        ((mouse_global_x - bc.left + HANDLE_CENTER - this.image_x) / this.image_width) * 100,
+                        5
+                    ),
+                    mouse_y = toFixedNumber(
+                        ((mouse_global_y - bc.top + HANDLE_CENTER - this.image_y) / this.image_height) * 100,
+                        5
+                    );
                 let target_width = mouse_x - other_point.x,
                     target_height = mouse_y - other_point.y;
 
@@ -545,13 +546,14 @@ class WorkspaceEngine {
         div.style.borderColor = this.grid_color_;
 
         makeElementDraggable(div, (global_x, global_y) => {
-            let point = this.getResizeHandles();
-            let prev_x = point.a.x,
-                prev_y = point.a.y;
-            point.a.x = toFixedNumber(((global_x - this.image_x) / this.image_width) * 100, 5);
-            point.a.y = toFixedNumber(((global_y - this.image_y) / this.image_height) * 100, 5);
-            point.b.x += point.a.x - prev_x;
-            point.b.y += point.a.y - prev_y;
+            let point = this.getResizeRectanglePoints(),
+                logical_width = point.bottom_right.x - point.top_left.x,
+                logical_height = point.bottom_right.y - point.top_left.y;
+            let handle = this.getResizeHandles();
+            handle.a.x = toFixedNumber(((global_x - this.image_x) / this.image_width) * 100, 5);
+            handle.a.y = toFixedNumber(((global_y - this.image_y) / this.image_height) * 100, 5);
+            handle.b.x = handle.a.x + logical_width;
+            handle.b.y = handle.a.y + logical_height;
             this.updateHandles(false);
         });
 
@@ -595,13 +597,24 @@ class WorkspaceEngine {
     }
 
     getResizeHandles() {
-        // Top/left first, then the other.
-        let point_a = this.resize_points[0],
-            point_b = this.resize_points[1],
-            top_left_index = point_a.x <= point_b.x ? 0 : 1;
         return {
-            a: this.resize_points[top_left_index],
-            b: this.resize_points[top_left_index === 0 ? 1 : 0],
+            a: this.resize_points[0],
+            b: this.resize_points[1],
+        };
+    }
+
+    // Handles may not exists for these logical points
+    getResizeRectanglePoints() {
+        let resize_point = this.getResizeHandles();
+        return {
+            top_left: {
+                x: Math.min(resize_point.a.x, resize_point.b.x),
+                y: Math.min(resize_point.a.y, resize_point.b.y),
+            },
+            bottom_right: {
+                x: Math.max(resize_point.a.x, resize_point.b.x),
+                y: Math.max(resize_point.a.y, resize_point.b.y),
+            },
         };
     }
 
@@ -617,13 +630,13 @@ class WorkspaceEngine {
     }
 
     cropImage() {
-        let point = this.getResizeHandles();
+        let point = this.getResizeRectanglePoints();
 
         // Store crop coordinates and keep the image object untouched
-        this.source_x = this.source_width * (point.a.x / 100) + this.source_x;
-        this.source_y = this.source_height * (point.a.y / 100) + this.source_y;
-        this.source_width = this.source_width * ((point.b.x - point.a.x) / 100);
-        this.source_height = this.source_height * ((point.b.y - point.a.y) / 100);
+        this.source_x = this.source_width * (point.top_left.x / 100) + this.source_x;
+        this.source_y = this.source_height * (point.top_left.y / 100) + this.source_y;
+        this.source_width = this.source_width * ((point.bottom_right.x - point.top_left.x) / 100);
+        this.source_height = this.source_height * ((point.bottom_right.y - point.top_left.y) / 100);
 
         this.updateImageDimensions();
         this.resetResizeHandles();
