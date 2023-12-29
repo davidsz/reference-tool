@@ -499,10 +499,7 @@ class WorkspaceEngine {
                 y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
 
             if (this.keep_aspect_ratio) {
-                // Determine the original selection rectangle to resize
                 let other_point = this.resize_points[n === 0 ? 1 : 0];
-                let original_width = Math.abs(point.x - other_point.x),
-                    original_height = Math.abs(point.y - other_point.y);
 
                 // Get minimum sides from the mouse coordinates
                 let bc = this.canvas.getBoundingClientRect();
@@ -515,17 +512,31 @@ class WorkspaceEngine {
                         5
                     );
                 let target_width = mouse_x - other_point.x,
-                    target_height = mouse_y - other_point.y;
+                    target_height = mouse_y - other_point.y,
+                    w_sign = target_width / Math.abs(target_width),
+                    h_sign = target_height / Math.abs(target_height);
 
-                // Scale the original rectangle to contain the new one
-                let new_rect = scaleWithAspectRatio(original_width, original_height, target_width, target_height, false);
+                // Scale the AR rectangle to contain the new one
+                let new_rect = scaleWithAspectRatio(
+                    this.resize_aspect_ratio.x,
+                    this.resize_aspect_ratio.y,
+                    Math.abs(target_width),
+                    Math.abs(target_height),
+                    false
+                );
                 const min_rect_size = 0.5;
                 if (new_rect.width < min_rect_size || new_rect.height < min_rect_size)
-                    new_rect = scaleWithAspectRatio(original_width, original_height, min_rect_size, min_rect_size, false);
+                    new_rect = scaleWithAspectRatio(
+                        this.resize_aspect_ratio.x,
+                        this.resize_aspect_ratio.y,
+                        min_rect_size,
+                        min_rect_size,
+                        false
+                    );
 
                 // Adjust point coordinates to the corner of the calculated rectangle
-                x = other_point.x + new_rect.width;
-                y = other_point.y + new_rect.height;
+                x = other_point.x + w_sign * new_rect.width;
+                y = other_point.y + h_sign * new_rect.height;
             }
 
             point.x = x;
