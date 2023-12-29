@@ -344,13 +344,9 @@ class WorkspaceEngine {
         if (this.mode !== workspace_mode.GRID) return;
 
         // Interactive handle for the point
-        let point = this.constructGridPoint(
-            toFixedNumber(((local_x - this.image_x) / this.image_width) * 100, 5),
-            toFixedNumber(((local_y - this.image_y) / this.image_height) * 100, 5)
-        );
-
-        // Visual position of the interactive handle
-        point.setLocalPosition(local_x, local_y);
+        let logical = this.localToLogicalPos(local_x, local_y);
+        let point = this.constructGridPoint(logical.x, logical.y);
+        point.setVisualPosition(local_x, local_y);
 
         this.updateDistanceLabels();
         this.redraw();
@@ -371,15 +367,16 @@ class WorkspaceEngine {
         point.vertical = true;
 
         // A function to update visual position
-        point.setLocalPosition = (local_x, local_y) => {
+        point.setVisualPosition = (local_x, local_y) => {
             point.style.top = local_y - HANDLE_CENTER + "px";
             point.style.left = local_x - HANDLE_CENTER + "px";
         };
 
         // Update and redraw the corresponding point when moving the handle
-        makeElementDraggable(point, (global_x, global_y) => {
-            point.x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5);
-            point.y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
+        makeElementDraggable(point, (local_x, local_y) => {
+            let logical = this.localToLogicalHandlePos(local_x, local_y);
+            point.x = logical.x;
+            point.y = logical.y;
             this.updateDistanceLabels();
             this.redraw();
         });
@@ -450,12 +447,26 @@ class WorkspaceEngine {
         };
     }
 
+    localToLogicalPos(x, y) {
+        return {
+            x: toFixedNumber(((x - this.image_x) / this.image_width) * 100, 5),
+            y: toFixedNumber(((y - this.image_y) / this.image_height) * 100, 5),
+        };
+    }
+
+    localToLogicalHandlePos(x, y) {
+        return {
+            x: toFixedNumber(((x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5),
+            y: toFixedNumber(((y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5),
+        };
+    }
+
     // Update grid/resize handles visually after a logical change
     updateHandles(update_rect) {
         if (update_rect === undefined) update_rect = true;
         [...this.grid_points, ...this.resize_points].forEach((point) => {
             let local = this.logicalToLocalPos(point.x, point.y);
-            point.setLocalPosition(local.x, local.y, update_rect);
+            point.setVisualPosition(local.x, local.y, update_rect);
         });
     }
 
@@ -487,32 +498,24 @@ class WorkspaceEngine {
         point.y = y;
 
         // A function to update visual position
-        point.setLocalPosition = (local_x, local_y, update_rect) => {
+        point.setVisualPosition = (local_x, local_y, update_rect) => {
             point.style.top = local_y - HANDLE_CENTER + "px";
             point.style.left = local_x - HANDLE_CENTER + "px";
             if (update_rect) this.updateResizeRectangle();
         };
 
         // Resize selection rectangle when moving the handle
-        makeElementDraggable(point, (global_x, global_y, mouse_global_x, mouse_global_y) => {
-            let x = toFixedNumber(((global_x + HANDLE_CENTER - this.image_x) / this.image_width) * 100, 5),
-                y = toFixedNumber(((global_y + HANDLE_CENTER - this.image_y) / this.image_height) * 100, 5);
+        makeElementDraggable(point, (local_x, local_y, mouse_global_x, mouse_global_y) => {
+            let logical = this.localToLogicalHandlePos(local_x, local_y);
 
             if (this.keep_aspect_ratio) {
                 let other_point = this.resize_points[n === 0 ? 1 : 0];
 
                 // Get minimum sides from the mouse coordinates
                 let bc = this.canvas.getBoundingClientRect();
-                let mouse_x = toFixedNumber(
-                        ((mouse_global_x - bc.left + HANDLE_CENTER - this.image_x) / this.image_width) * 100,
-                        5
-                    ),
-                    mouse_y = toFixedNumber(
-                        ((mouse_global_y - bc.top + HANDLE_CENTER - this.image_y) / this.image_height) * 100,
-                        5
-                    );
-                let target_width = mouse_x - other_point.x,
-                    target_height = mouse_y - other_point.y,
+                let mouse = this.localToLogicalHandlePos(mouse_global_x - bc.left, mouse_global_y - bc.top);
+                let target_width = mouse.x - other_point.x,
+                    target_height = mouse.y - other_point.y,
                     w_sign = target_width / Math.abs(target_width),
                     h_sign = target_height / Math.abs(target_height);
 
@@ -535,12 +538,12 @@ class WorkspaceEngine {
                     );
 
                 // Adjust point coordinates to the corner of the calculated rectangle
-                x = other_point.x + w_sign * new_rect.width;
-                y = other_point.y + h_sign * new_rect.height;
+                logical.x = other_point.x + w_sign * new_rect.width;
+                logical.y = other_point.y + h_sign * new_rect.height;
             }
 
-            point.x = x;
-            point.y = y;
+            point.x = logical.x;
+            point.y = logical.y;
             this.updateHandles();
             this.redraw();
         });
@@ -556,15 +559,17 @@ class WorkspaceEngine {
         div.classList.add("resize-rect");
         div.style.borderColor = this.grid_color_;
 
-        makeElementDraggable(div, (global_x, global_y) => {
-            let point = this.getResizeRectanglePoints(),
+        makeElementDraggable(div, (local_x, local_y) => {
+            let logical = this.localToLogicalPos(local_x, local_y),
+                point = this.getResizeRectanglePoints(),
                 logical_width = point.bottom_right.x - point.top_left.x,
                 logical_height = point.bottom_right.y - point.top_left.y;
+
             let handle = this.getResizeHandles();
-            handle.a.x = toFixedNumber(((global_x - this.image_x) / this.image_width) * 100, 5);
-            handle.a.y = toFixedNumber(((global_y - this.image_y) / this.image_height) * 100, 5);
-            handle.b.x = handle.a.x + logical_width;
-            handle.b.y = handle.a.y + logical_height;
+            handle.a.x = logical.x;
+            handle.a.y = logical.y;
+            handle.b.x = logical.x + logical_width;
+            handle.b.y = logical.y + logical_height;
             this.updateHandles(false);
         });
 
@@ -592,8 +597,7 @@ class WorkspaceEngine {
                     local_y += this.image_height;
                 }
 
-                // Visual position of the interactive handle
-                point.setLocalPosition(local_x, local_y, false);
+                point.setVisualPosition(local_x, local_y, false);
                 point.style.visibility = css_visibility;
             }
             // Draggable rectangle
