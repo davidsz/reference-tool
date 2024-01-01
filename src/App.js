@@ -13,11 +13,15 @@ import CropRoundedIcon from "@mui/icons-material/CropRounded";
 import Grid4x4RoundedIcon from "@mui/icons-material/Grid4x4Rounded";
 import PaletteRoundedIcon from "@mui/icons-material/PaletteRounded";
 import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
+import InfoIcon from "@mui/icons-material/Info";
+import HelpIcon from "@mui/icons-material/Help";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import Workspace from "./components/Workspace";
-import ConfirmDialog from "./components/ConfirmDialog";
+import ConfirmDialog from "./components/dialogs/ConfirmDialog";
 import { SPLASH_IMAGE_URL } from "./theme";
+import AboutDialog from "./components/dialogs/AboutDialog";
+import HelpDialog from "./components/dialogs/HelpDialog";
 
 export default function App() {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -25,6 +29,8 @@ export default function App() {
     const [zoomValue, setZoomValue] = useState(100);
     const [fullscreenMode, setFullscreenMode] = useState(false);
     const [resetDialogOpen, setResetDialogOpen] = useState(false);
+    const [helpDialogOpen, setHelpDialogOpen] = useState(false);
+    const [aboutDialogOpen, setAboutDialogOpen] = useState(false);
 
     const localStorageManager = useContext(LocalStorageContext);
     const workspaceEngine = useContext(WorkspaceContext);
@@ -97,12 +103,12 @@ export default function App() {
                     <LeftDrawer drawerOpen={drawerOpen} closeDrawer={() => setDrawerOpen(false)}>
                         <List>
                             <LeftDrawerItem
-                                text="Load session"
+                                text={app_mode.LOAD_SESSION.title}
                                 icon={<RestorePageRoundedIcon />}
                                 onClick={() => changeAppMode(app_mode.LOAD_SESSION)}
                             />
                             <LeftDrawerItem
-                                text="Save session"
+                                text={app_mode.SAVE_SESSION.title}
                                 icon={<SaveRoundedIcon />}
                                 onClick={() => changeAppMode(app_mode.SAVE_SESSION)}
                             />
@@ -110,22 +116,22 @@ export default function App() {
                         <Divider />
                         <List>
                             <LeftDrawerItem
-                                text="Image"
+                                text={app_mode.IMAGE.title}
                                 icon={<ImageRoundedIcon />}
                                 onClick={() => changeAppMode(app_mode.IMAGE)}
                             />
                             <LeftDrawerItem
-                                text="Resize"
+                                text={app_mode.RESIZE.title}
                                 icon={<CropRoundedIcon />}
                                 onClick={() => changeAppMode(app_mode.RESIZE)}
                             />
                             <LeftDrawerItem
-                                text="Grid"
+                                text={app_mode.GRID.title}
                                 icon={<Grid4x4RoundedIcon />}
                                 onClick={() => changeAppMode(app_mode.GRID)}
                             />
                             <LeftDrawerItem
-                                text="Colors"
+                                text={app_mode.COLORS.title}
                                 icon={<PaletteRoundedIcon />}
                                 onClick={() => changeAppMode(app_mode.COLORS)}
                             />
@@ -137,6 +143,8 @@ export default function App() {
                                 icon={<RestartAltRoundedIcon />}
                                 onClick={() => setResetDialogOpen(true)}
                             />
+                            <LeftDrawerItem text="Help" icon={<HelpIcon />} onClick={() => setHelpDialogOpen(true)} />
+                            <LeftDrawerItem text="About" icon={<InfoIcon />} onClick={() => setAboutDialogOpen(true)} />
                         </List>
                     </LeftDrawer>
                 </>
@@ -168,6 +176,10 @@ export default function App() {
                 onReject={() => {}}
                 onClose={() => setResetDialogOpen(false)}
                 title="Are you sure you want to reset the workspace?"></ConfirmDialog>
+
+            <HelpDialog open={helpDialogOpen} setOpen={setHelpDialogOpen} mode={appMode} />
+
+            <AboutDialog open={aboutDialogOpen} setOpen={setAboutDialogOpen} />
         </Box>
     );
 }

@@ -1,4 +1,4 @@
-![Ferenc logo](ferenc-logo.png)
+![Ferenc logo](public/image/ferenc-logo.png)
 
 # Ferenc
 
