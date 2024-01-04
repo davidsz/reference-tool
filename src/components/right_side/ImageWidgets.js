@@ -22,7 +22,7 @@ function ImageWidgets() {
                     },
                 }}
             >
-                <FileInput onChange={(f) => setFile(f)} />
+                <FileInput accept="image/*" onChange={(f) => setFile(f)} />
             </RightSideWidget>
             <RightSideWidget
                 name="Image from URL"

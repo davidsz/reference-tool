@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button, Typography, Stack } from "@mui/material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 
-function FileInput({ onChange }) {
+function FileInput({ accept, onChange }) {
     const [attachment, setAttachment] = useState();
 
     function handleChange(event) {
@@ -17,7 +17,7 @@ function FileInput({ onChange }) {
             <Stack spacing={2} direction="row" alignItems="center">
                 <InsertDriveFileIcon color="inherit" />
                 <Typography noWrap>{attachment?.name || "Select file"}</Typography>
-                <input type="file" hidden onChange={handleChange} />
+                <input type="file" accept={accept} hidden onChange={handleChange} />
             </Stack>
         </Button>
     );

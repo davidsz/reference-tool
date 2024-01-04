@@ -22,7 +22,7 @@ function LoadSessionWidgets() {
                     fileReader.readAsText(file);
                 },
             }}>
-            <FileInput onChange={(f) => setFile(f)} />
+            <FileInput accept="application/json" onChange={(f) => setFile(f)} />
         </RightSideWidget>
     );
 }
