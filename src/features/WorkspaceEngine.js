@@ -729,7 +729,6 @@ class WorkspaceEngine {
     exportAsJSON() {
         let json = {
             imageURI: imageToDataURL(this.image),
-            mode: this.mode,
             source_x: this.source_x,
             source_y: this.source_y,
             source_width: this.source_width,
@@ -741,7 +740,10 @@ class WorkspaceEngine {
             grid_points: [],
             resize_points: [],
             keep_aspect_ratio: this.keep_aspect_ratio,
-            resize_aspect_ratio_: this.resize_aspect_ratio_,
+            resize_aspect_ratio_: {
+                x: this.resize_aspect_ratio_.x,
+                y: this.resize_aspect_ratio_.y,
+            },
             grid_color_: this.grid_color_,
             grid_color_light_: this.grid_color_light_,
             grayscale_: this.grayscale_,
@@ -777,7 +779,6 @@ class WorkspaceEngine {
             { once: true }
         );
         this.image.src = json.imageURI;
-        this.mode = json.mode;
         this.source_x = json.source_x;
         this.source_y = json.source_y;
         this.source_width = json.source_width;
@@ -791,7 +792,10 @@ class WorkspaceEngine {
         this.resize_points = [];
         this.resize_div = null;
         this.keep_aspect_ratio = json.keep_aspect_ratio;
-        this.resize_aspect_ratio_ = json.resize_aspect_ratio_;
+        this.resize_aspect_ratio_ = {
+            x: json.resize_aspect_ratio_.x,
+            y: json.resize_aspect_ratio_.y,
+        };
         this.grid_color_ = json.grid_color_;
         this.grid_color_light_ = json.grid_color_light_;
         this.grayscale_ = json.grayscale_;
