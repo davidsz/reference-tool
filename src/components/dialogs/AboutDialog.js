@@ -16,7 +16,7 @@ function AboutDialog({ open, setOpen }) {
                     alt="Ferenc logo"
                     src={LOGO_IMAGE_URL}
                 />
-                <Typography align="justify">
+                <Typography align="justify" color="text.secondary">
                     Ferenc is a free, lightweight and web based reference tool for artists who seek a way to transfer digital
                     images from their display to traditional media, such as paper or canvas.
                 </Typography>
@@ -34,7 +34,7 @@ function AboutDialog({ open, setOpen }) {
                     </Link>
                 </Typography>
             </Stack>
-            <Typography>Copyright &copy; 2022-{new Date().getFullYear()}, Szabolcs David</Typography>
+            <Typography color="text.secondary">Copyright &copy; 2022-{new Date().getFullYear()}, Szabolcs David</Typography>
         </AlertDialog>
     );
 }
