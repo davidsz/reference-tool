@@ -70,8 +70,8 @@ function HelpDialog({ open, setOpen, mode }) {
                     <Typography gutterBottom>
                         A reference point can be placed on the workspace by clicking, and they can be rearranged by dragging. The
                         points will have a horizontal and a vertical line by default. Changing between this, horizontal only and
-                        vertical only points can be done by right mouse click on the point. A long mouse click will remove the
-                        desired reference point.
+                        vertical only points can be done by right mouse click on the point. A third right mouse button click will
+                        remove the desired reference point.
                     </Typography>
                     <Typography gutterBottom>
                         The application can generate an evenly distributed grid system by the "Automatic grid creation" function.

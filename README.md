@@ -14,8 +14,7 @@ Have you ever pressed your ruler to your monitor to get accurate proportions of 
 - Resize image to a desired aspect ratio
 - Generate grid automatically or add helper lines manually
   - **Left click** in grid creation mode: add reference point with horizontal and vertical lines
-  - **Right click** on the point: change between horizontal line, vertical line or grid point
-  - **Long right click** on the point: remove
+  - **Right click** on the point: change between horizontal line, vertical line or remove the point
   - **Left click drag & drop**: move points
 - Show image size proportions among the grid points
   - Using an unnamed measurement unit as virtual size, you can consider sizes as centimeters, millimeters or anything else

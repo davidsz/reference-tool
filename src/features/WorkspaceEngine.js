@@ -1,6 +1,6 @@
 import { getAspectRatio, scaleWithAspectRatio, toFixedNumber } from "./math";
 import { grayscaleEffect } from "./color_filters";
-import { makeElementDraggable, attachRightClickHandler, attachLongRightClickHandler } from "./dom";
+import { makeElementDraggable, attachRightClickHandler } from "./dom";
 import { imageToDataURL } from "./helper";
 
 let instance;
@@ -380,7 +380,7 @@ class WorkspaceEngine {
             this.redraw();
         });
 
-        // Change horizontal and vertical lines on right click
+        // Right click: horizontal -> vertical -> remove point
         attachRightClickHandler(point, () => {
             if (point.horizontal && point.vertical) {
                 point.vertical = false;
@@ -388,24 +388,16 @@ class WorkspaceEngine {
                 point.horizontal = false;
                 point.vertical = true;
             } else if (!point.horizontal && point.vertical) {
-                point.horizontal = true;
-                point.vertical = true;
+                for (let i = 0; i < this.grid_points.length; i++) {
+                    if (this.grid_points[i] === point) {
+                        this.grid_points.splice(i, 1);
+                        point.remove();
+                        break;
+                    }
+                }
             }
             this.updateDistanceLabels();
             this.redraw();
-        });
-
-        // Remove point by holding right mouse button
-        attachLongRightClickHandler(point, 750, () => {
-            for (let i = 0; i < this.grid_points.length; i++) {
-                if (this.grid_points[i] === point) {
-                    this.grid_points.splice(i, 1);
-                    point.remove();
-                    this.updateDistanceLabels();
-                    this.redraw();
-                    break;
-                }
-            }
         });
 
         this.handles_container.appendChild(point);

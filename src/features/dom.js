@@ -52,26 +52,3 @@ export function attachRightClickHandler(element, callback) {
         }
     });
 }
-
-export function attachLongRightClickHandler(element, delay, callback) {
-    element.oncontextmenu = function (e) {
-        e.preventDefault();
-    };
-    element.addEventListener("mousedown", longRightClickMouseDown);
-    let last_rightclick_timeout = 0;
-
-    function longRightClickMouseDown(e) {
-        if (e.button !== 2)
-            return;
-        element.addEventListener("mouseup", longRightClickMouseUp);
-        last_rightclick_timeout = window.setTimeout(function () {
-            longRightClickMouseUp();
-            callback();
-        }, delay);
-    }
-
-    function longRightClickMouseUp(e) {
-        window.clearTimeout(last_rightclick_timeout);
-        element.removeEventListener("mouseup", longRightClickMouseUp);
-    }
-}
