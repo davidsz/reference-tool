@@ -24,16 +24,16 @@ import AboutDialog from "./components/dialogs/AboutDialog";
 import HelpDialog from "./components/dialogs/HelpDialog";
 
 export default function App() {
+    const localStorageManager = useContext(LocalStorageContext);
+    const workspaceEngine = useContext(WorkspaceContext);
+
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [appMode, setAppMode] = useState(app_mode.LOAD_SESSION);
-    const [zoomValue, setZoomValue] = useState(100);
+    const [zoomValue, setZoomValue] = useState(workspaceEngine.scale * 100);
     const [fullscreenMode, setFullscreenMode] = useState(false);
     const [resetDialogOpen, setResetDialogOpen] = useState(false);
     const [helpDialogOpen, setHelpDialogOpen] = useState(false);
     const [aboutDialogOpen, setAboutDialogOpen] = useState(false);
-
-    const localStorageManager = useContext(LocalStorageContext);
-    const workspaceEngine = useContext(WorkspaceContext);
 
     useEffect(() => {
         document.documentElement.addEventListener("fullscreenchange", () => {
@@ -170,8 +170,9 @@ export default function App() {
                 open={resetDialogOpen}
                 onAccept={() => {
                     localStorageManager.remove(localStorageManager.CURRENT);
-                    workspaceEngine.resetCrop();
                     workspaceEngine.loadImageURL(SPLASH_IMAGE_URL);
+                    setZoomValue(100);
+                    changeAppMode(app_mode.LOAD_SESSION);
                 }}
                 onReject={() => {}}
                 onClose={() => setResetDialogOpen(false)}

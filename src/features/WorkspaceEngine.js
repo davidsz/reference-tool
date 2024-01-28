@@ -634,13 +634,11 @@ class WorkspaceEngine {
 
     resetResizeHandles() {
         if (!this.resize_points.length) return;
-
-        let point_a = this.resize_points[0],
-            point_b = this.resize_points[1];
-        point_a.x = 0;
-        point_a.y = 0;
-        point_b.x = 100;
-        point_b.y = 100;
+        let point = this.getResizeHandles();
+        point.a.x = 0;
+        point.a.y = 0;
+        point.b.x = 100;
+        point.b.y = 100;
     }
 
     cropImage() {
@@ -696,6 +694,37 @@ class WorkspaceEngine {
         this.updateDistanceLabels();
     }
 
+    // Resets state of the workspace (except the loaded image)
+    reset() {
+        // Resize logic
+        this.source_x = 0;
+        this.source_y = 0;
+        this.source_width = this.image.width;
+        this.source_height = this.image.height;
+        this.keep_aspect_ratio = false;
+        this.resize_aspect_ratio_ = { x: 1, y: 1 };
+        this.resetResizeHandles();
+
+        // Virtual size, distance labels
+        let ar = getAspectRatio(this.image.width, this.image.height);
+        this.setVirtualSizes(ar.width, ar.height);
+
+        // Other private flags
+        this.scale_ = 1;
+        this.grayscale_ = false;
+        // Calls setter
+        this.grid_color_light = 50; // Updates grid_color, resize handles and rectangle color
+
+        // Image drawing coordinates
+        this.updateImageDimensions(); // DEPS on resize and scale values
+
+        // Grid points, reference lines
+        this.clearGridPoints();
+        this.updateHandles(); // DEPS on image dimensions
+
+        this.redraw();
+    }
+
     loadLocalImage(file) {
         if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
             window.alert("File API is not supported.");
@@ -707,16 +736,7 @@ class WorkspaceEngine {
             this.image.addEventListener(
                 "load",
                 () => {
-                    this.clearGridPoints();
-                    this.source_width = this.image.width;
-                    this.source_height = this.image.height;
-                    let ar = getAspectRatio(this.image.width, this.image.height);
-                    this.setVirtualSizes(ar.width, ar.height);
-                    this.grayscale_ = false;
-                    this.updateImageDimensions();
-                    this.resetResizeHandles();
-                    this.updateHandles();
-                    this.redraw();
+                    this.reset();
                 },
                 { once: true }
             );
@@ -729,16 +749,7 @@ class WorkspaceEngine {
         this.image.addEventListener(
             "load",
             () => {
-                this.clearGridPoints();
-                this.source_width = this.image.width;
-                this.source_height = this.image.height;
-                let ar = getAspectRatio(this.image.width, this.image.height);
-                this.setVirtualSizes(ar.width, ar.height);
-                this.grayscale_ = false;
-                this.updateImageDimensions();
-                this.resetResizeHandles();
-                this.updateHandles();
-                this.redraw();
+                this.reset();
             },
             { once: true }
         );
