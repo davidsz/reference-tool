@@ -271,19 +271,18 @@ class WorkspaceEngine {
         context.strokeStyle = this.grid_color_;
         for (let i = 0, length = this.grid_points.length; i < length; i++) {
             let point = this.grid_points[i];
-            let x = this.image_width * (point.x / 100) + this.image_x;
-            let y = this.image_height * (point.y / 100) + this.image_y;
+            let local = this.logicalToLocalPos(point.x, point.y);
 
             if (point.horizontal) {
                 context.beginPath();
-                context.moveTo(0, y);
-                context.lineTo(canvas_width, y);
+                context.moveTo(0, local.y);
+                context.lineTo(canvas_width, local.y);
                 context.stroke();
             }
             if (point.vertical) {
                 context.beginPath();
-                context.moveTo(x, 0);
-                context.lineTo(x, canvas_height);
+                context.moveTo(local.x, 0);
+                context.lineTo(local.x, canvas_height);
                 context.stroke();
             }
         }
@@ -646,12 +645,22 @@ class WorkspaceEngine {
 
     cropImage() {
         let point = this.getResizeRectanglePoints();
+        let prev_x = this.source_x,
+            prev_y = this.source_y;
 
         // Store crop coordinates and keep the image object untouched
         this.source_x = this.source_width * (point.top_left.x / 100) + this.source_x;
         this.source_y = this.source_height * (point.top_left.y / 100) + this.source_y;
         this.source_width = this.source_width * ((point.bottom_right.x - point.top_left.x) / 100);
         this.source_height = this.source_height * ((point.bottom_right.y - point.top_left.y) / 100);
+
+        // Update grid points to stay on their places
+        this.grid_points.forEach((point) => {
+            let local = this.logicalToLocalPos(point.x, point.y);
+            let logical = this.localToLogicalPos(local.x - (this.source_x - prev_x), local.y - (this.source_y - prev_y));
+            point.x = logical.x;
+            point.y = logical.y;
+        });
 
         this.updateImageDimensions();
         this.resetResizeHandles();
@@ -660,10 +669,20 @@ class WorkspaceEngine {
     }
 
     resetCrop() {
+        let prev_x = this.source_x,
+            prev_y = this.source_y;
         this.source_x = 0;
         this.source_y = 0;
         this.source_width = this.image.width;
         this.source_height = this.image.height;
+
+        // Update grid points to stay on their places
+        this.grid_points.forEach((point) => {
+            let local = this.logicalToLocalPos(point.x, point.y);
+            let logical = this.localToLogicalPos(local.x - (this.source_x - prev_x), local.y - (this.source_y - prev_y));
+            point.x = logical.x;
+            point.y = logical.y;
+        });
 
         this.updateImageDimensions();
         this.resetResizeHandles();
