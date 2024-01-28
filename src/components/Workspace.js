@@ -22,22 +22,21 @@ function Workspace({ onScroll }) {
     };
 
     useEffect(() => {
-        workspaceEngine.init(
-            document.getElementById("workspace-canvas"),
-            document.getElementById("grid-handles-container")
-        );
+        workspaceEngine.init(document.getElementById("workspace-canvas"), document.getElementById("grid-handles-container"));
         let container = document.getElementById("workspace-outer");
         workspaceEngine.resize(container.offsetWidth, container.offsetHeight);
         let current_session = localStorageManager.get(localStorageManager.CURRENT)?.value;
-        if (current_session && current_session.imageURI.length > 15)
-            workspaceEngine.importFromJSON(current_session);
-        else
-            workspaceEngine.loadImageURL(SPLASH_IMAGE_URL);
+        if (current_session && current_session.imageURI.length > 15) workspaceEngine.importFromJSON(current_session);
+        else workspaceEngine.loadImageURL(SPLASH_IMAGE_URL);
 
-        container.addEventListener("wheel", (e) => {
-            e.preventDefault();
-            onScroll(parseInt(e.deltaY * -0.15));
-        });
+        container.addEventListener(
+            "wheel",
+            (e) => {
+                e.preventDefault();
+                onScroll(parseInt(e.deltaY * -0.15));
+            },
+            { passive: false }
+        );
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
