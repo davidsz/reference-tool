@@ -144,26 +144,16 @@ class WorkspaceEngine {
     set resize_aspect_ratio(val) {
         this.resize_aspect_ratio_ = val;
 
-        let width = val.x;
-        let height = val.y;
-        // Convert AR to logical sizes
-        if (this.image.width / width < this.image.height / height) {
-            // Fit resize box to the horizontal side of the image
-            let desired_px_height = (this.image.width / width) * height;
-            height = (desired_px_height / this.image_height) * 100;
-            width = 100;
-        } else {
-            // Fit resize box to the vertical side of the image
-            let desired_px_width = (this.image.height / height) * width;
-            width = (desired_px_width / this.image.width) * 100;
-            height = 100;
-        }
+        let new_rect = scaleWithAspectRatio(val.x, val.y, this.image_width, this.image_height, true);
+        let logical_width = (new_rect.width / this.image_width) * 100;
+        let logical_height = (new_rect.height / this.image_height) * 100;
+
         // Update resize handles and rectangle
         let point = this.getResizeHandles();
-        point.a.x = (100 - width) / 2;
-        point.a.y = (100 - height) / 2;
-        point.b.x = point.a.x + width;
-        point.b.y = point.a.y + height;
+        point.a.x = (100 - logical_width) / 2;
+        point.a.y = (100 - logical_height) / 2;
+        point.b.x = point.a.x + logical_width;
+        point.b.y = point.a.y + logical_height;
         this.updateHandles();
         this.redraw();
     }
@@ -501,32 +491,36 @@ class WorkspaceEngine {
 
             if (this.keep_aspect_ratio) {
                 let other_point = this.resize_points[n === 0 ? 1 : 0];
+                let other_point_local = this.logicalToLocalPos(other_point.x, other_point.y);
 
                 // Get minimum sides from the mouse coordinates
                 let bc = this.canvas.getBoundingClientRect();
-                let mouse = this.localToLogicalHandlePos(mouse_global_x - bc.left, mouse_global_y - bc.top);
-                let target_width = mouse.x - other_point.x,
-                    target_height = mouse.y - other_point.y,
-                    w_sign = target_width / Math.abs(target_width),
-                    h_sign = target_height / Math.abs(target_height);
+                let mouse_local = {
+                    x: mouse_global_x - bc.left,
+                    y: mouse_global_y - bc.top
+                }
+                let target = {
+                    width: mouse_local.x - other_point_local.x,
+                    height: mouse_local.y - other_point_local.y
+                };
+                let w_sign = Math.sign(target.width),
+                    h_sign = Math.sign(target.height);
+                target.width = Math.abs(target.width);
+                target.height= Math.abs(target.height);
 
                 // Scale the AR rectangle to contain the new one
+                const min_rect_size = 0.5;
                 let new_rect = scaleWithAspectRatio(
                     this.resize_aspect_ratio.x,
                     this.resize_aspect_ratio.y,
-                    Math.abs(target_width),
-                    Math.abs(target_height),
+                    min_rect_size < target.width ? target.width : min_rect_size,
+                    min_rect_size < target.height ? target.height : min_rect_size,
                     false
                 );
-                const min_rect_size = 0.5;
-                if (new_rect.width < min_rect_size || new_rect.height < min_rect_size)
-                    new_rect = scaleWithAspectRatio(
-                        this.resize_aspect_ratio.x,
-                        this.resize_aspect_ratio.y,
-                        min_rect_size,
-                        min_rect_size,
-                        false
-                    );
+
+                // Convert new_rect to logical size
+                new_rect.width = (new_rect.width / this.image_width) * 100;
+                new_rect.height = (new_rect.height / this.image_height) * 100;
 
                 // Adjust point coordinates to the corner of the calculated rectangle
                 logical.x = other_point.x + w_sign * new_rect.width;
